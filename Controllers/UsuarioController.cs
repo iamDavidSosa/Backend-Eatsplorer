@@ -21,6 +21,21 @@ namespace PROYECTO_PRUEBA.Controllers
             _context = context;
         }
 
+        // POST: api/Usuario/login
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] Usuario usuario)
+        {
+            if (_context.Usuarios.Any(u => u.correo == usuario.correo))
+            {
+                return BadRequest("El correo ya está en uso");
+            }
+
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            return Ok("Usuario registrado exitosamente");
+        }
+
         // GET: api/Usuario
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios()
