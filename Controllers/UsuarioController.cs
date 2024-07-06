@@ -23,16 +23,25 @@ namespace PROYECTO_PRUEBA.Controllers
 
         // POST: api/Usuario/register
         [HttpPost("register")]
+
+        //Define un método asincrónico que retorna un resultado de acción para las solicitudes HTTP.
         public async Task<IActionResult> Register([FromBody] Usuario usuario)
         {
+            // Verifica si ya existe un usuario con el mismo correo en la base de datos
             if (_context.Usuarios.Any(u => u.correo == usuario.correo))
             {
+                // Si existe, devuelve una respuesta de error indicando que el correo ya está en uso
                 return BadRequest("El correo ya está en uso");
             }
 
+            // Agrega el nuevo usuario al contexto de la base de datos
             _context.Usuarios.Add(usuario);
+
+            // Guarda los cambios en la base de datos de manera asíncrona
             await _context.SaveChangesAsync();
 
+
+            // Devuelve una respuesta de éxito indicando que el usuario se registró correctamente
             return Ok("Usuario registrado exitosamente");
         }
 
@@ -40,14 +49,17 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Usuario login)
         {
+            // Busca un usuario en la base de datos que coincida con el correo y la clave proporcionados
             var usuario = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.correo == login.correo && u.clave == login.clave);
 
+            // Si no se encuentra un usuario que coincida, retorna una respuesta no autorizada
             if (usuario == null)
             {
                 return Unauthorized("Credenciales inválidas");
             }
 
+            // Si se encuentra un usuario que coincida, retorna una respuesta de éxito
             return Ok("Inicio de sesión exitoso");
         }
 
