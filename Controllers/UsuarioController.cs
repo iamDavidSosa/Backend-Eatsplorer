@@ -21,7 +21,7 @@ namespace PROYECTO_PRUEBA.Controllers
             _context = context;
         }
 
-        // POST: api/Usuario/login
+        // POST: api/Usuario/register
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] Usuario usuario)
         {
@@ -34,6 +34,21 @@ namespace PROYECTO_PRUEBA.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Usuario registrado exitosamente");
+        }
+
+        // POST: api/Usuario/login
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] Usuario login)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.correo == login.correo && u.clave == login.clave);
+
+            if (usuario == null)
+            {
+                return Unauthorized("Credenciales inválidas");
+            }
+
+            return Ok("Inicio de sesión exitoso");
         }
 
         // GET: api/Usuario
