@@ -10,5 +10,9 @@ namespace PROYECTO_PRUEBA.Context
         }
 
         public DbSet<Usuario> Usuarios { get; set; }
+
+        public DbSet<Recuperar_Contrasena> Recuperar_Contrasena { get; set; }
+
+        public DbSet<Preguntas_Contrasena> Preguntas_Contrasena { get; set; }
     }
 }
