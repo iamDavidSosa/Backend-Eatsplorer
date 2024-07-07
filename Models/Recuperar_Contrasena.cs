@@ -11,8 +11,6 @@ namespace PROYECTO_PRUEBA.Models
         public string Respuesta1 { get; set; }
         public string Pregunta2 { get; set; }
         public string Respuesta2 { get; set; }
-        public string Pregunta3 { get; set; }
-        public string Respuesta3 { get; set; }
 
     }
 }
