@@ -35,5 +35,19 @@ namespace PROYECTO_PRUEBA.Controllers
             return Ok(usuario);
         }
 
+        // GET: api/Perfil/1
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPerfil(int id)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
+
+            if (usuario == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            return Ok(usuario);
+        }
+
     }
 }
