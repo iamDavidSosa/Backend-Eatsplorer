@@ -52,8 +52,7 @@ namespace PROYECTO_PRUEBA.Controllers
             var respuestasCorrectas = new List<string>
         {
             recuperacion.Respuesta1,
-            recuperacion.Respuesta2,
-            recuperacion.Respuesta3
+            recuperacion.Respuesta2
         };
 
             // Compara cada respuesta proporcionada con las respuestas correctas
