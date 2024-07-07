@@ -55,7 +55,7 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
         // POST: api/Acceso/Login
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDIO)
         {
             var usuarioEncontrado = await _context.Usuarios

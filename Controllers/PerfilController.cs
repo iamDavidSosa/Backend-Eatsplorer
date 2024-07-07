@@ -21,11 +21,11 @@ namespace PROYECTO_PRUEBA.Controllers
             _context = context;
         }
 
-        // GET: api/Perfil
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPerfil(int id)
+        // POST: api/Perfil
+        [HttpPost("perfil")]
+        public async Task<IActionResult> GetPerfil([FromBody] PerfilDTO perfilDTO)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
+            var usuario = await _context.Usuarios.FindAsync(perfilDTO.id_usuario);
 
             if (usuario == null)
             {
@@ -34,5 +34,6 @@ namespace PROYECTO_PRUEBA.Controllers
 
             return Ok(usuario);
         }
+
     }
 }
