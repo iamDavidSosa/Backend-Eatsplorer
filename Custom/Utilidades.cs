@@ -47,7 +47,7 @@ namespace PROYECTO_PRUEBA.Custom
                 claims: userClaims,
                 expires: DateTime.Now.AddMinutes(10),
                 signingCredentials: credentials
-            );                                                                                          );
+            );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 
