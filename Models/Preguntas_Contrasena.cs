@@ -6,11 +6,6 @@ namespace PROYECTO_PRUEBA.Models
     {
         [Key]
         public int IdPreguntasContrasena { get; set; }
-        public string Pregunta1 { get; set; }
-        public string Pregunta2 { get; set; }
-        public string Pregunta3 { get; set; }
-        public string Pregunta4 { get; set; }
-        public string Pregunta5 { get; set; }
-        public string Pregunta6 { get; set; }
+        public string Pregunta { get; set; }
     }
 }
