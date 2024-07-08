@@ -82,5 +82,16 @@ namespace PROYECTO_PRUEBA.Controllers
             else return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario, usuario = usuarioEncontrado.usuario, correo = usuarioEncontrado.correo });
 
         }
+
+        // POST: api/Acceso/LoginDirecto
+        [HttpPost("loginDirecto")]
+        public async Task<IActionResult> LoginDirecto([FromBody] LoginDirectoDTO loginDirectoDTO)
+        {
+            var usuarioEncontrado = await _context.Usuarios
+                .Where(u => u.correo == loginDirectoDTO.correo).FirstOrDefaultAsync();
+
+            if (usuarioEncontrado == null) { return Unauthorized(new { isSuccess = false, token = "" }); }
+            else return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario, usuario = usuarioEncontrado.usuario, correo = usuarioEncontrado.correo });
+        }
     }
 }
