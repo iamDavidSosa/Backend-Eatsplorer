@@ -46,7 +46,7 @@ namespace PROYECTO_PRUEBA.Controllers
 
             if(usuario.id_usuario != 0)
             {
-                return Ok(new {isSuccess = true});
+                return await LoginAfterRegistration(usuarioDTO.correo, usuarioDTO.clave);
             }
             else
             {
@@ -54,15 +54,32 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
+        private async Task<IActionResult> LoginAfterRegistration(string correo, string clave)
+        {
+            var usuarioEncontrado = await _context.Usuarios
+                .Where(u => u.correo == correo && u.clave == _utilidades.EncriptarSHA256(clave))
+                .FirstOrDefaultAsync();
+
+            if (usuarioEncontrado == null)
+            {
+                return Unauthorized(new { isSuccess = false, token = "", message = "Usuario no autorizado." });
+            }
+            else
+            {
+                // Generar token y devolverlo junto con el éxito
+                return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario, usuario = usuarioEncontrado.usuario, correo = usuarioEncontrado.correo });
+            }
+        }
+
         // POST: api/Acceso/Login
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDIO)
         {
             var usuarioEncontrado = await _context.Usuarios
                 .Where(u => u.correo == loginDIO.correo && u.clave == _utilidades.EncriptarSHA256(loginDIO.clave)).FirstOrDefaultAsync();
 
             if (usuarioEncontrado == null) { return Unauthorized(new { isSuccess = false, token = "" }); }
-            else return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado) });
+            else return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario, usuario = usuarioEncontrado.usuario, correo = usuarioEncontrado.correo });
 
         }
     }
