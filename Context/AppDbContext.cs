@@ -28,16 +28,16 @@ namespace PROYECTO_PRUEBA.Context
                 .HasKey(ri => new { ri.id_receta, ri.id_ingrediente });
 
             // Configura la relación muchos a muchos entre Receta y Ingrediente a través de Recetas_Ingredientes
-           /* modelBuilder.Entity<Recetas_Ingredientes>()
-                .HasOne(ri => ri.Receta)
+            modelBuilder.Entity<Recetas_Ingredientes>()
+                .HasOne(ri => ri.Recetas)
                 .WithMany(r => r.Recetas_Ingredientes)
-                .HasForeignKey(ri => ri.RecetaId);
+                .HasForeignKey(ri => ri.id_receta);
 
 
             modelBuilder.Entity<Recetas_Ingredientes>()
                 .HasOne(ri => ri.Ingrediente)
                 .WithMany(i => i.Recetas_Ingredientes)
-                .HasForeignKey(ri => ri.IngredienteId);*/
+                .HasForeignKey(ri => ri.id_ingrediente);
         }
     }
 }
