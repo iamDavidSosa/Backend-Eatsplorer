@@ -90,8 +90,8 @@ namespace PROYECTO_PRUEBA.Controllers
             var usuarioEncontrado = await _context.Usuarios
                 .Where(u => u.correo == loginDirectoDTO.correo).FirstOrDefaultAsync();
 
-            if (usuarioEncontrado == null) { return Unauthorized(new { isSuccess = false, token = "" }); }
-            else return Ok(new { isSuccess = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario, usuario = usuarioEncontrado.usuario, correo = usuarioEncontrado.correo });
+            if (usuarioEncontrado == null) { return Unauthorized(new { exists = false, token = "", id_usuario = 0 }); }
+            else return Ok(new { exists = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario});
         }
     }
 }
