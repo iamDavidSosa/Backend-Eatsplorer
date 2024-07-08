@@ -22,60 +22,6 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
-        //CODIGO PARA VER LAS PREGUNTAS 
-
-        [HttpGet("preguntas/{IdPreguntasContrasena}")]
-        public async Task<IActionResult> GetPreguntas(int IdPreguntasContrasena)
-        {
-
-            // Consulta que haya un registro con el id que proporcionamos
-            var recuperacion = await _context.Preguntas_Contrasena
-                .FirstOrDefaultAsync(r => r.IdPreguntasContrasena == IdPreguntasContrasena);
-
-
-            // Verifica si no se encontró ninguna recuperación para el registro especificado
-            if (recuperacion == null)
-            {
-                // Devuelve un resultado NotFound con un mensaje si no se encontraron preguntas
-                return NotFound("No se encontraron preguntas para el usuario especificado.");
-            }
-
-            // Si se encontró la recuperación, crea una lista de cadenas que contienen las preguntas de recuperación
-            var preguntas = new List<string>
-        {
-            recuperacion.Pregunta1,
-            recuperacion.Pregunta2,
-            recuperacion.Pregunta3,
-            recuperacion.Pregunta4,
-            recuperacion.Pregunta5,
-            recuperacion.Pregunta6
-        };
-
-            // Devuelve un resultado con la lista de preguntas.
-            return Ok(preguntas);
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // GET: api/Preguntas_Contrasena
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Preguntas_Contrasena>>> GetPreguntas_Contrasena()

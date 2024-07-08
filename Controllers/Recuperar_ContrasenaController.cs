@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Context;
+using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 
 namespace PROYECTO_PRUEBA.Controllers
@@ -15,18 +16,19 @@ namespace PROYECTO_PRUEBA.Controllers
     public class Recuperar_ContrasenaController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly Utilidades _utilidades;
 
-        public Recuperar_ContrasenaController(AppDbContext context)
+        public Recuperar_ContrasenaController(AppDbContext context, Utilidades utilidades)
         {
             _context = context;
+            _utilidades = utilidades;
+            _utilidades = utilidades;
         }
 
         //CODIGO PARA RESPONDER LAS PREGUNTAS
-
         [HttpPost("verificarRespuestas")]
         public async Task<IActionResult> VerificarRespuestas(int idUsuario, string nuevaClave, [FromBody] List<string> respuestas)
         {
-
             // Consulta para obtener el usuario por su ID
             var Usuario = await _context.Usuarios.FindAsync(idUsuario);
 
@@ -35,7 +37,6 @@ namespace PROYECTO_PRUEBA.Controllers
             {
                 return NotFound("Usuario no encontrado.");
             }
-
 
             // Consulta que haya un usuario con el id que proporcionamos
             var recuperacion = await _context.Recuperar_Contrasena
@@ -66,16 +67,15 @@ namespace PROYECTO_PRUEBA.Controllers
                 }
             }
 
-            // Si todas las respuestas coinciden, permite al usuario cambiar su contraseña
-            Usuario.clave = nuevaClave;
+            // Encriptar la nueva clave antes de asignarla al usuario
+            Usuario.clave = _utilidades.EncriptarSHA256(nuevaClave);
 
             // Guarda los cambios en la base de datos
             await _context.SaveChangesAsync();
 
             // Si todas las respuestas coinciden, devuelve un mensaje de éxito
-            return Ok("La contraseña ha sido cambiada con exito.");
+            return Ok("La contraseña ha sido cambiada con éxito.");
         }
-
 
 
 
