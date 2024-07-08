@@ -75,7 +75,7 @@ namespace PROYECTO_PRUEBA.Controllers
         ///////////////
         ///
 
-
+        //CODIGO PARA CREAR LAS RECETAS CON SUS RESPECTIVOS INGREDIENTES
         [HttpPost]
         [Route("Crear")]
         public async Task<IActionResult> CrearReceta([FromBody] Recetas receta)
