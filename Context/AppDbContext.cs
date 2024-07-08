@@ -16,5 +16,7 @@ namespace PROYECTO_PRUEBA.Context
         public DbSet<Preguntas_Contrasena> Preguntas_Contrasena { get; set; }
 
         public DbSet<Recetas> Recetas { get; set; }
+
+        public DbSet<Ingredientes> Ingredientes { get; set; }
     }
 }
