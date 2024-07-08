@@ -16,7 +16,7 @@ namespace PROYECTO_PRUEBA.Models
 
 
         public ICollection<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
-        public List<int> Ingredientes { get; set; }  // Lista de IDs de ingredientes
+
 
     }
 }

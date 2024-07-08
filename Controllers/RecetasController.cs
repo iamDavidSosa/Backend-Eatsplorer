@@ -15,7 +15,7 @@ namespace PROYECTO_PRUEBA.Controllers
     [ApiController]
     public class RecetasController : ControllerBase
     {
-        /* private readonly AppDbContext _appDbContext;
+       /*  private readonly AppDbContext _appDbContext;
 
          public RecetasController(AppDbContext appDbContext)
          {
@@ -75,6 +75,7 @@ namespace PROYECTO_PRUEBA.Controllers
         ///////////////
         ///
 
+
         [HttpPost]
         [Route("Crear")]
         public async Task<IActionResult> CrearReceta([FromBody] Recetas receta)
@@ -84,35 +85,52 @@ namespace PROYECTO_PRUEBA.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Crear una nueva instancia de la clase Recetas utilizando los datos del DTO
-            var nuevaReceta = new Recetas
-            {
-                titulo = receta.titulo,
-                descripcion = receta.descripcion,
-                instrucciones = receta.instrucciones,
-                foto_receta = receta.foto_receta,
-                usuario_id = receta.usuario_id,
-                fecha_creacion = DateTime.Now
-            };
-
-            // Agregar la nueva receta al contexto de la base de datos
-            _appDbContext.Recetas.Add(nuevaReceta);
-
-            // Para cada ingrediente, crear un nuevo Recetas_Ingredientes y agregarlo al contexto
-            foreach (var ingredienteId in receta.Ingredientes)
-            {
-                var recetaIngrediente = new Recetas_Ingredientes
-                {
-                    id_receta = nuevaReceta.id_receta,
-                    id_ingrediente = ingredienteId
-                };
-                _appDbContext.Recetas_Ingredientes.Add(recetaIngrediente);
-            }
-
             try
             {
-                // Guardar cambios en la base de datos
+                // Crear una nueva instancia de la clase Recetas utilizando los datos del DTO
+                var nuevaReceta = new Recetas
+                {
+                    titulo = receta.titulo,
+                    descripcion = receta.descripcion,
+                    instrucciones = receta.instrucciones,
+                    foto_receta = receta.foto_receta,
+                    usuario_id = receta.usuario_id,
+                    fecha_creacion = DateTime.Now
+                };
+
+                // Agregar la nueva receta al contexto de la base de datos
+                _appDbContext.Recetas.Add(nuevaReceta);
                 await _appDbContext.SaveChangesAsync();
+
+
+                // Proceso para agregar los ingredientes
+                foreach (var ingrediente in receta.Recetas_Ingredientes.Select(ri => ri.Ingrediente))
+                {
+                    // Verificar si el ingrediente ya existe en la base de datos
+                    var ingredienteExistente = await _appDbContext.Ingredientes
+                        .FirstOrDefaultAsync(i => i.nombre == ingrediente.nombre);
+
+                    // Si no existe, agregar el nuevo ingrediente
+                    if (ingredienteExistente == null)
+                    {
+                        ingredienteExistente = new Ingredientes { nombre = ingrediente.nombre };
+                        _appDbContext.Ingredientes.Add(ingredienteExistente);
+                        await _appDbContext.SaveChangesAsync();
+                    }
+
+                    // Crear la relación entre la receta y el ingrediente
+                    var nuevaRecetaIngrediente = new Recetas_Ingredientes
+                    {
+                        id_receta = nuevaReceta.id_receta,
+                        id_ingrediente = ingredienteExistente.id_ingrediente
+                    };
+
+                    _appDbContext.Recetas_Ingredientes.Add(nuevaRecetaIngrediente);
+                }
+
+                // Guardar los cambios en la tabla Recetas_Ingredientes
+                await _appDbContext.SaveChangesAsync();
+
                 return StatusCode(StatusCodes.Status201Created);  // Recurso creado exitosamente
             }
             catch (DbUpdateException ex)
@@ -121,6 +139,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
 
 
     }
