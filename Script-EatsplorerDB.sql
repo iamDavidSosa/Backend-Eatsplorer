@@ -32,11 +32,23 @@ CREATE TABLE recetas (
 	id int identity (1,1) primary key,
     titulo VARCHAR(100) NOT NULL,
     descripcion TEXT,
-    ingredientes TEXT NOT NULL,
     instrucciones TEXT NOT NULL,
     foto_receta VARCHAR(255),
     usuario_id INT,
     fecha_creacion DATETIME
+);
+
+
+-- INGREDIENTES
+CREATE TABLE Ingredientes (
+    id_ingrediente int identity (1,1) primary key,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- RECETAS-INGREDIENTES
+CREATE TABLE Receta_ingrediente (
+    id_receta INT,
+    id_ingrediente INT
 );
 
 --RECETAS GUARDADAS--
