@@ -70,5 +70,58 @@ namespace PROYECTO_PRUEBA.Controllers
             return StatusCode(StatusCodes.Status200OK, new { value = result });
         }
 
+
+        ///////////////
+        ///////////////
+        ///
+
+        [HttpPost]
+        [Route("Crear")]
+        public async Task<IActionResult> CrearReceta([FromBody] Recetas receta)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Crear una nueva instancia de la clase Recetas utilizando los datos del DTO
+            var nuevaReceta = new Recetas
+            {
+                titulo = receta.titulo,
+                descripcion = receta.descripcion,
+                instrucciones = receta.instrucciones,
+                foto_receta = receta.foto_receta,
+                usuario_id = receta.usuario_id,
+                fecha_creacion = DateTime.Now
+            };
+
+            // Agregar la nueva receta al contexto de la base de datos
+            _appDbContext.Recetas.Add(nuevaReceta);
+
+            // Para cada ingrediente, crear un nuevo Recetas_Ingredientes y agregarlo al contexto
+            foreach (var ingredienteId in receta.Ingredientes)
+            {
+                var recetaIngrediente = new Recetas_Ingredientes
+                {
+                    id_receta = nuevaReceta.id_receta,
+                    id_ingrediente = ingredienteId
+                };
+                _appDbContext.Recetas_Ingredientes.Add(recetaIngrediente);
+            }
+
+            try
+            {
+                // Guardar cambios en la base de datos
+                await _appDbContext.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status201Created);  // Recurso creado exitosamente
+            }
+            catch (DbUpdateException ex)
+            {
+                // Manejar errores de base de datos
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+
     }
 }
