@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PROYECTO_PRUEBA.Models
 {
     public class Recetas_Ingredientes
     {
-        [Key]
         public int id_receta { get; set; }
 
         //   public Recetas Recetas { get; set; }
