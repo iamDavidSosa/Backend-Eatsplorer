@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
-    [Route("api/[controller]")]
-    [Authorize]
-    [ApiController]
-    public class RecetasController : ControllerBase
-    {
+    //[Route("api/[controller]")]
+    //[Authorize]
+    //[ApiController]
+    //public class RecetasController : ControllerBase
+    //{
        /*  private readonly AppDbContext _appDbContext;
 
          public RecetasController(AppDbContext appDbContext)
@@ -34,7 +34,7 @@ namespace PROYECTO_PRUEBA.Controllers
 
           }*/
 
-        private readonly AppDbContext _appDbContext;
+       /* private readonly AppDbContext _appDbContext;
 
         public RecetasController(AppDbContext appDbContext)
         {
@@ -142,5 +142,5 @@ namespace PROYECTO_PRUEBA.Controllers
 
 
 
-    }
+    }*/
 }
