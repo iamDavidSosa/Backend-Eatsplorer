@@ -21,7 +21,7 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+      /*  protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configura la clave primaria compuesta para la tabla intermedia Recetas_Ingredientes
             modelBuilder.Entity<Recetas_Ingredientes>()
@@ -38,6 +38,6 @@ namespace PROYECTO_PRUEBA.Context
                 .HasOne(ri => ri.Ingrediente)
                 .WithMany(i => i.Recetas_Ingredientes)
                 .HasForeignKey(ri => ri.id_ingrediente);
-        }
+        }*/
     }
 }
