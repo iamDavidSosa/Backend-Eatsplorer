@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Models;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Context
 {
@@ -39,5 +40,6 @@ namespace PROYECTO_PRUEBA.Context
                 .WithMany(i => i.Recetas_Ingredientes)
                 .HasForeignKey(ri => ri.id_ingrediente);
         }
+        public DbSet<PROYECTO_PRUEBA.Models.DTOs.PerfilDTO> PerfilDTO { get; set; } = default!;
     }
 }
