@@ -15,7 +15,7 @@ namespace PROYECTO_PRUEBA.Models
         public DateTime fecha_creacion { get; set; }
 
 
-        public ICollection<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
+     //   public ICollection<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
 
 
     }

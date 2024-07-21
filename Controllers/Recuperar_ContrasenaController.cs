@@ -25,42 +25,42 @@ namespace PROYECTO_PRUEBA.Controllers
             _utilidades = utilidades;
         }
 
-        //CODIGO PARA RESPONDER LAS PREGUNTAS
+
         [HttpPost("verificarRespuestas")]
         public async Task<IActionResult> VerificarRespuestas(int idUsuario, string nuevaClave, [FromBody] List<string> respuestas)
         {
             // Consulta para obtener el usuario por su ID
-            var Usuario = await _context.Usuarios.FindAsync(idUsuario);
+            var usuario = await _context.Usuarios.FindAsync(idUsuario);
 
             // Verifica si el usuario existe
-            if (Usuario == null)
+            if (usuario == null)
             {
                 return NotFound("Usuario no encontrado.");
             }
 
-            // Consulta que haya un usuario con el id que proporcionamos
-            var recuperacion = await _context.Recuperar_Contrasena
-                .FirstOrDefaultAsync(r => r.IdUsuario == idUsuario);
+            // Consulta para obtener todas las entradas de recuperación para el usuario especificado
+            var recuperaciones = await _context.Recuperar_Contrasena
+                .Where(r => r.IdUsuario == idUsuario)
+                .ToListAsync();
 
             // Verifica si no se encontró ninguna recuperación para el usuario especificado
-            if (recuperacion == null)
+            if (recuperaciones == null || recuperaciones.Count == 0)
             {
                 // Devuelve un resultado NotFound con un mensaje si no se encontraron preguntas
                 return NotFound("No se encontraron preguntas para el usuario especificado.");
             }
 
-            // Si se encontró la recuperación, crea una lista de cadenas que contienen las preguntas de recuperación
-            var respuestasCorrectas = new List<string>
-        {
-            recuperacion.Respuesta1,
-            recuperacion.Respuesta2
-        };
+            // Verifica que el número de respuestas proporcionadas sea igual al número de preguntas esperadas
+            if (recuperaciones.Count != respuestas.Count)
+            {
+                return BadRequest("El número de respuestas proporcionadas no coincide con el número de preguntas.");
+            }
 
             // Compara cada respuesta proporcionada con las respuestas correctas
-            for (int i = 0; i < respuestas.Count; i++)
+            for (int i = 0; i < recuperaciones.Count; i++)
             {
                 // Compara ignorando mayúsculas y minúsculas
-                if (!respuestas[i].Equals(respuestasCorrectas[i], StringComparison.OrdinalIgnoreCase))
+                if (!respuestas[i].Equals(recuperaciones[i].respuesta, StringComparison.OrdinalIgnoreCase))
                 {
                     // Si alguna respuesta no coincide, devuelve un error 401
                     return Unauthorized("Una o más respuestas son incorrectas.");
@@ -68,7 +68,7 @@ namespace PROYECTO_PRUEBA.Controllers
             }
 
             // Encriptar la nueva clave antes de asignarla al usuario
-            Usuario.clave = _utilidades.EncriptarSHA256(nuevaClave);
+            usuario.clave = _utilidades.EncriptarSHA256(nuevaClave);
 
             // Guarda los cambios en la base de datos
             await _context.SaveChangesAsync();
@@ -76,6 +76,7 @@ namespace PROYECTO_PRUEBA.Controllers
             // Si todas las respuestas coinciden, devuelve un mensaje de éxito
             return Ok("La contraseña ha sido cambiada con éxito.");
         }
+
 
 
 

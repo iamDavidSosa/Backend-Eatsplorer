@@ -7,10 +7,8 @@ namespace PROYECTO_PRUEBA.Models
         [Key]
         public int IdRecuperarContrasena { get; set; }
         public int IdUsuario { get; set; }
-        public string Pregunta1 { get; set; }
-        public string Respuesta1 { get; set; }
-        public string Pregunta2 { get; set; }
-        public string Respuesta2 { get; set; }
+        public int id_pregunta { get; set; }
+        public string respuesta { get; set; }
 
     }
 }

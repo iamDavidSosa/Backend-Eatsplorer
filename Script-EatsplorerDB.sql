@@ -66,3 +66,19 @@ CREATE TABLE recetas_accedidas_recientemente (
     receta_id INT NOT NULL,
     fecha_acceso DATETIME NOT NULL
 );
+
+--PREGUNTAS CONTRASEÑA
+CREATE TABLE Preguntas_Contrasena (
+    IdPreguntasContrasena int identity (1,1) primary key,
+    pregunta VARCHAR(255) NOT NULL
+);
+
+
+--RECUPERAR CONTRASEÑA
+CREATE TABLE Recuperar_Contrasena (
+    IdRecuperarContrasena int identity (1,1) primary key,
+    IdUsuario INT NOT NULL,
+    id_pregunta int NOT NULL,
+    respuesta VARCHAR(255) NOT NULL
+
+);
