@@ -216,7 +216,7 @@ namespace PROYECTO_PRUEBA.Controllers
         {
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("YourApp", "1.0"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Backend-Eatsplorer", "1.0"));
 
             var response = await httpClient.GetAsync("https://api.github.com/user");
 
