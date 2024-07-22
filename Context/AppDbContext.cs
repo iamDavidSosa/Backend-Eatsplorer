@@ -22,10 +22,15 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
 
+        public DbSet<Recetas_Guardadas> Recetas_Guardadas { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Recetas_Ingredientes>()
                 .HasKey(ri => new { ri.id_receta, ri.id_ingrediente });
+
+            modelBuilder.Entity<Recetas_Guardadas>()
+                .HasKey(rg => new { rg.id_receta, rg.id_usuario });
 
             base.OnModelCreating(modelBuilder);
         }

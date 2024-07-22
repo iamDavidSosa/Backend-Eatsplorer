@@ -15,7 +15,7 @@ namespace PROYECTO_PRUEBA.Controllers
     {
         private readonly AppDbContext _context;
 
-        public IngredientesController(AppDbContext context, Utilidades utilidades)
+        public IngredientesController(AppDbContext context)
         {
             _context = context;
         }
@@ -38,7 +38,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 _context.Ingredientes.Add(ingrediente);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { message = "Ingrediente ingresado con éxito." });
+                return Ok(new { message = "Ingrediente ingresado con éxito.", id_ingrediente = ingrediente.id_ingrediente });
             }
             catch (Exception ex)
             {

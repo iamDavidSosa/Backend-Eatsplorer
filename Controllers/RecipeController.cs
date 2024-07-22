@@ -16,7 +16,7 @@ namespace PROYECTO_PRUEBA.Controllers
     {
         private readonly AppDbContext _context;
 
-        public RecipeController(AppDbContext context, Utilidades utilidades)
+        public RecipeController(AppDbContext context)
         {
             _context = context;
         }
