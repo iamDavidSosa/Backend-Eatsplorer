@@ -6,6 +6,7 @@ using PROYECTO_PRUEBA.Models;
 using PROYECTO_PRUEBA.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using PROYECTO_PRUEBA.Context;
+using Google.Apis.Auth;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -93,5 +94,39 @@ namespace PROYECTO_PRUEBA.Controllers
             if (usuarioEncontrado == null) { return Unauthorized(new { exists = false, token = "", id_usuario = 0 }); }
             else return Ok(new { exists = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario});
         }
+
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] LoginGoogleDTO googleLoginDTO)
+        {
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(googleLoginDTO.IdToken);
+                var googleId = payload.Subject;
+
+                var usuarioEncontrado = await _context.Usuarios
+                    .Where(u => u.google_id == googleId).FirstOrDefaultAsync();
+
+                if (usuarioEncontrado == null)
+                {
+                    return Unauthorized(new { isSuccess = false, message = "Usuario no encontrado" });
+                }
+
+                return Ok(new
+                {
+                    isSuccess = true,
+                    token = _utilidades.GenerarToken(usuarioEncontrado),
+                    id_usuario = usuarioEncontrado.id_usuario,
+                    usuario = usuarioEncontrado.usuario,
+                    correo = usuarioEncontrado.correo
+                });
+            }
+            catch (InvalidJwtException)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Token de Google inválido" });
+            }
+        }
     }
+
 }
+

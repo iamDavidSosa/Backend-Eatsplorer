@@ -15,5 +15,7 @@ namespace PROYECTO_PRUEBA.Models
         public string ?descripcion { get; set; }
         public string ?url_foto_portada { get; set; }
         public int ?cant_recetas_guardadas { get; set; }
+
+        public string ?google_id { get; set; }
     }
 }
