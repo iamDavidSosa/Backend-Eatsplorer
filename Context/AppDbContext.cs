@@ -26,7 +26,7 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Medida> Medida { get; set; }
 
-        public DbSet<Despensa> Despensa { get; set; }
+       // public DbSet<Despensa> Despensa { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
