@@ -6,6 +6,9 @@ using PROYECTO_PRUEBA.Models;
 using PROYECTO_PRUEBA.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using PROYECTO_PRUEBA.Context;
+using Google.Apis.Auth;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -93,5 +96,142 @@ namespace PROYECTO_PRUEBA.Controllers
             if (usuarioEncontrado == null) { return Unauthorized(new { exists = false, token = "", id_usuario = 0 }); }
             else return Ok(new { exists = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario});
         }
+
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] LoginGoogleDTO googleLoginDTO)
+        {
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(googleLoginDTO.IdToken);
+                var googleId = payload.Subject;
+
+                var usuarioEncontrado = await _context.Usuarios
+                    .Where(u => u.google_id == googleId).FirstOrDefaultAsync();
+
+                if (usuarioEncontrado == null)
+                {
+                    return Unauthorized(new { isSuccess = false, message = "Usuario no encontrado" });
+                }
+
+                return Ok(new
+                {
+                    isSuccess = true,
+                    token = _utilidades.GenerarToken(usuarioEncontrado),
+                    id_usuario = usuarioEncontrado.id_usuario,
+                    usuario = usuarioEncontrado.usuario,
+                    correo = usuarioEncontrado.correo
+                });
+            }
+            catch (InvalidJwtException)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Token de Google inválido" });
+            }
+        }
+
+        [HttpPost("github-login")]
+        public async Task<IActionResult> GitHubLogin([FromBody] LoginGithubDTO gitHubLoginDTO)
+        {
+            var tokenResponse = await GetGitHubAccessToken(gitHubLoginDTO.Code, "Ov23liyMUlVD4dfFzXMX", "8f72db25e8530097b947ed343df816a49b29ba3a");
+
+            if (tokenResponse == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Token de GitHub inválido" });
+            }
+
+            var userResponse = await GetGitHubUser(tokenResponse.AccessToken);
+
+            if (userResponse == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "No se pudo obtener la información del usuario de GitHub" });
+            }
+
+            var usuarioEncontrado = await _context.Usuarios
+                .Where(u => u.github_id == userResponse.Id.ToString()).FirstOrDefaultAsync();
+
+            if (usuarioEncontrado == null)
+            {
+                var nuevoUsuario = new Usuario
+                {
+                    usuario = userResponse.Login,
+                    correo = userResponse.Email,
+                    github_id = userResponse.Id.ToString(),
+                    fecha_creacion = DateTime.Now,
+                    url_foto_perfil = userResponse.AvatarUrl,
+                    descripcion = userResponse.Bio
+                };
+
+                _context.Usuarios.Add(nuevoUsuario);
+                await _context.SaveChangesAsync();
+
+                usuarioEncontrado = nuevoUsuario;
+            }
+
+            return Ok(new
+            {
+                isSuccess = true,
+                token = _utilidades.GenerarToken(usuarioEncontrado),
+                id_usuario = usuarioEncontrado.id_usuario,
+                usuario = usuarioEncontrado.usuario,
+                correo = usuarioEncontrado.correo
+            });
+        }
+
+        private async Task<GitHubTokenResponse> GetGitHubAccessToken(string code, string clientId, string clientSecret)
+        {
+            using var httpClient = new HttpClient();
+            var requestData = new
+            {
+                client_id = clientId,
+                client_secret = clientSecret,
+                code = code
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync("https://github.com/login/oauth/access_token", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var queryParams = System.Web.HttpUtility.ParseQueryString(responseContent);
+            return new GitHubTokenResponse
+            {
+                AccessToken = queryParams["access_token"]
+            };
+        }
+
+        private async Task<GitHubUserResponse> GetGitHubUser(string accessToken)
+        {
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("YourApp", "1.0"));
+
+            var response = await httpClient.GetAsync("https://api.github.com/user");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<GitHubUserResponse>(responseContent);
+        }
+    }
+
+    public class GitHubTokenResponse
+    {
+        public string AccessToken { get; set; }
+    }
+
+    public class GitHubUserResponse
+    {
+        public int Id { get; set; }
+        public string Login { get; set; }
+        public string Email { get; set; }
+        public string AvatarUrl { get; set; }
+        public string Bio { get; set; }
     }
 }
