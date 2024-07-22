@@ -24,6 +24,10 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Recetas_Guardadas> Recetas_Guardadas { get; set; }
 
+        public DbSet<Medida> Medida { get; set; }
+
+        public DbSet<Despensa> Despensa { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Recetas_Ingredientes>()
