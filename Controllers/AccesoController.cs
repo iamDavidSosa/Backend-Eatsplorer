@@ -129,12 +129,19 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-        [HttpPost("github-login")]
-        public async Task<IActionResult> GitHubLogin([FromBody] LoginGithubDTO gitHubLoginDTO)
+        [HttpGet("github-login")]
+        public async Task<IActionResult> GitHubCallback([FromQuery] string code)
         {
-            var tokenResponse = await GetGitHubAccessToken(gitHubLoginDTO.Code, "Ov23liyMUlVD4dfFzXMX", "8f72db25e8530097b947ed343df816a49b29ba3a");
+            if (string.IsNullOrEmpty(code))
+            {
+                return BadRequest(new { isSuccess = false, message = "Código de autorización no proporcionado" });
+            }
 
-            if (tokenResponse == null)
+            var clientId = "Ov23liyMUlVD4dfFzXMX";
+            var clientSecret = "dfd55f63b076f0dcfb094f89efebccb97a98afc6";
+            var tokenResponse = await GetGitHubAccessToken(code, clientId, clientSecret);
+
+            if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 return Unauthorized(new { isSuccess = false, message = "Token de GitHub inválido" });
             }
@@ -190,12 +197,14 @@ namespace PROYECTO_PRUEBA.Controllers
             var content = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync("https://github.com/login/oauth/access_token", content);
 
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"GitHub Access Token Response: {responseContent}");
+
             if (!response.IsSuccessStatusCode)
             {
                 return null;
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
             var queryParams = System.Web.HttpUtility.ParseQueryString(responseContent);
             return new GitHubTokenResponse
             {
@@ -207,18 +216,25 @@ namespace PROYECTO_PRUEBA.Controllers
         {
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("YourApp", "1.0"));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Backend-Eatsplorer", "1.0"));
 
             var response = await httpClient.GetAsync("https://api.github.com/user");
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"GitHub User Response: {responseContent}");
 
             if (!response.IsSuccessStatusCode)
             {
                 return null;
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<GitHubUserResponse>(responseContent);
         }
+    }
+
+    public class GitHubLoginDTO
+    {
+        public string Code { get; set; }
     }
 
     public class GitHubTokenResponse
