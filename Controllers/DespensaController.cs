@@ -7,10 +7,10 @@ using PROYECTO_PRUEBA.Models;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class DespensaController : ControllerBase
+    //[Route("api/[controller]")]
+    //[ApiController]
+    //[Authorize]
+   /* public class DespensaController : ControllerBase
     {
         private readonly AppDbContext _context;
 
@@ -31,7 +31,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 if (existingDespensa != null)
                 {
                     return Ok();
-                }*/
+                }
 
                 // Agregamos a la base de datos
                 _context.Despensa.Add(despensa);
@@ -45,5 +45,5 @@ namespace PROYECTO_PRUEBA.Controllers
             }
 
         }
-    }
+    }*/
 }
