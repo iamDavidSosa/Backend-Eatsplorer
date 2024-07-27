@@ -33,7 +33,7 @@ namespace PROYECTO_PRUEBA.Controllers
                     return Ok();
                 }
 
-                // Agregamos el ingrediente a la base de datos
+                // Agregamos a la base de datos
                 _context.Medida.Add(medida);
                 await _context.SaveChangesAsync();
 
