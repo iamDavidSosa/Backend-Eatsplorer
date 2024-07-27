@@ -36,8 +36,8 @@ namespace PROYECTO_PRUEBA.Context
             modelBuilder.Entity<Recetas_Guardadas>()
                 .HasKey(rg => new { rg.id_receta, rg.id_usuario });
 
-            modelBuilder.Entity<Despensa>()
-                .HasNoKey();
+            //modelBuilder.Entity<Despensa>()
+                //.HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }

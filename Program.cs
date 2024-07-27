@@ -6,9 +6,6 @@ using System.Text;
 using PROYECTO_PRUEBA.Models;
 using PROYECTO_PRUEBA.Custom;
 using Microsoft.CodeAnalysis.Options;
-using Google.Apis.Auth;
-using Newtonsoft.Json;
-using System.Net.Http;
 
 
 
@@ -20,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("Connection");
 
 //Registrar servicio para la conexion
-builder.Services.AddDbContext<AppDbContext> (options=> options.UseSqlServer (connectionString));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddSingleton<Utilidades>();
 
@@ -39,20 +36,9 @@ builder.Services.AddAuthentication(config =>
         ValidateIssuer = false,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
-        ValidIssuer = "https://accounts.google.com",
-        ValidAudience = "159134234283-50bbfc07s291e2vnalpa0cgvgr0el23d.apps.googleusercontent.com",
-        IssuerSigningKeys = GetGoogleSigningKeys(),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
-
-IEnumerable<SecurityKey> GetGoogleSigningKeys()
-{
-    using var httpClient = new HttpClient();
-    var response = httpClient.GetStringAsync("https://www.googleapis.com/oauth2/v3/certs").Result;
-    var keys = JsonConvert.DeserializeObject<JsonWebKeySet>(response);
-    return keys.Keys;
-}
 
 builder.Services.AddCors(options =>
 {
@@ -74,7 +60,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
 }
 
 app.UseSwagger();
