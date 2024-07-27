@@ -133,23 +133,22 @@ namespace PROYECTO_PRUEBA.Controllers
         public IActionResult GitHubLogin()
         {
             var clientId = "Ov23liyMUlVD4dfFzXMX";
-            var redirectUri = "https://api-eat.azurewebsites.net/api/Acceso/github-callback";
-            var githubUrl = $"https://github.com/login/oauth/authorize?client_id={clientId}&redirect_uri={redirectUri}";
+            var redirectUri = "https://localhost:7166/api/Acceso/github-callback";
+            var githubUrl = $"https://github.com/login/oauth/authorize?client_id={clientId}&scope=user:email&redirect_uri={redirectUri}";
             return Redirect(githubUrl);
         }
-
-
         //var clientId = "Ov23liyMUlVD4dfFzXMX";
-        //var clientSecret = "dfd55f63b076f0dcfb094f89efebccb97a98afc6";
+        //var clientSecret = "4437c5513ebdd6a5ebf83cb8f6f54c6c6a670a08";
+
         [HttpGet("github-callback")]
-        public async Task<IActionResult> GitHubCallback([FromQuery] string code)
+        public async Task<IActionResult> GitHubCallback([FromQuery] LoginGithubDTO loginGithubDTO)
         {
-            if (string.IsNullOrEmpty(code))
+            if (string.IsNullOrEmpty(loginGithubDTO.Code))
             {
                 return BadRequest(new { isSuccess = false, message = "Código de autorización no proporcionado" });
             }
 
-            var tokenResponse = await GetGitHubAccessToken(code);
+            var tokenResponse = await GetGitHubAccessToken(loginGithubDTO.Code);
 
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
@@ -173,6 +172,8 @@ namespace PROYECTO_PRUEBA.Controllers
                     usuario = userResponse.Login,
                     correo = userResponse.Email,
                     github_id = userResponse.Id.ToString(),
+                    id_rol = 2,
+                    clave = "",
                     fecha_creacion = DateTime.Now,
                     url_foto_perfil = userResponse.AvatarUrl,
                     descripcion = userResponse.Bio
@@ -201,7 +202,7 @@ namespace PROYECTO_PRUEBA.Controllers
             request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
             var clientId = "Ov23liyMUlVD4dfFzXMX";
-            var clientSecret = "dfd55f63b076f0dcfb094f89efebccb97a98afc6";
+            var clientSecret = "4437c5513ebdd6a5ebf83cb8f6f54c6c6a670a08";
             var requestData = new
             {
                 client_id = clientId,
@@ -250,27 +251,37 @@ namespace PROYECTO_PRUEBA.Controllers
 
             return userData;
         }
-
-        public class GitHubTokenResponse
-        {
-            [JsonProperty("access_token")]
-            public string AccessToken { get; set; }
-        }
-
-        public class GitHubUserResponse
-        {
-            public int Id { get; set; }
-            public string Login { get; set; }
-            public string Email { get; set; }
-            public string AvatarUrl { get; set; }
-            public string Bio { get; set; }
-        }
-
-        public class GitHubEmailResponse
-        {
-            public string Email { get; set; }
-            public bool Primary { get; set; }
-            public bool Verified { get; set; }
-        }
     }
+
+    public class GitHubTokenResponse
+    {
+        [JsonProperty("access_token")]
+        public string AccessToken { get; set; }
+    }
+
+    public class GitHubUserResponse
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("login")]
+        public string Login { get; set; }
+
+        [JsonProperty("avatar_url")]
+        public string AvatarUrl { get; set; }
+
+        [JsonProperty("bio")]
+        public string Bio { get; set; }
+
+        [JsonProperty("email")]
+        public string Email { get; set; }
+    }
+
+    public class GitHubEmailResponse
+    {
+        public string Email { get; set; }
+        public bool Primary { get; set; }
+        public bool Verified { get; set; }
+    }
+
 }
