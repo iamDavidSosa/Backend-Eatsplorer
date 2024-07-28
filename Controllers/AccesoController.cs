@@ -128,20 +128,22 @@ namespace PROYECTO_PRUEBA.Controllers
                 return Unauthorized(new { isSuccess = false, message = "Token de Google inválido" });
             }
         }
-
+        // GET: api/Acceso/github-login
         [HttpGet("github-login")]
         public IActionResult GitHubLogin()
         {
             var clientId = "Ov23liyMUlVD4dfFzXMX";
-            var redirectUri = "https://localhost:7166/api/Acceso/github-callback";
+            var redirectUri = "https://api-eat.azurewebsites.net/api/Acceso/github-callback";
             var githubUrl = $"https://github.com/login/oauth/authorize?client_id={clientId}&scope=user:email&redirect_uri={redirectUri}";
             return Redirect(githubUrl);
         }
+
         //var clientId = "Ov23liyMUlVD4dfFzXMX";
         //var clientSecret = "4437c5513ebdd6a5ebf83cb8f6f54c6c6a670a08";
-
-        [HttpGet("github-callback")]
-        public async Task<IActionResult> GitHubCallback([FromQuery] LoginGithubDTO loginGithubDTO)
+        
+        // POST: api/Acceso/github-callback
+        [HttpPost("github-callback")]
+        public async Task<IActionResult> GitHubCallback([FromBody] LoginGithubDTO loginGithubDTO)
         {
             if (string.IsNullOrEmpty(loginGithubDTO.Code))
             {
@@ -191,9 +193,11 @@ namespace PROYECTO_PRUEBA.Controllers
                 token = _utilidades.GenerarToken(usuarioEncontrado),
                 id_usuario = usuarioEncontrado.id_usuario,
                 usuario = usuarioEncontrado.usuario,
-                correo = usuarioEncontrado.correo
+                correo = usuarioEncontrado.correo,
+                url_foto_perfil = usuarioEncontrado.url_foto_perfil
             });
         }
+
 
         private async Task<GitHubTokenResponse> GetGitHubAccessToken(string code)
         {
