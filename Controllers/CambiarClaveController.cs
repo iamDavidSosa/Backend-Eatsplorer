@@ -77,7 +77,7 @@ namespace PROYECTO_PRUEBA.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
-                return Unauthorized("Usuario no autenticado.");
+                return Unauthorized(new { isSuccess = false, mesasge = "Usuario no autenticado." });
             }
 
             int idUsuario = int.Parse(userIdClaim.Value);
@@ -94,7 +94,7 @@ namespace PROYECTO_PRUEBA.Controllers
             // Verifica si la clave actual proporcionada coincide con la clave almacenada (encriptada)
             if (usuario.clave != _utilidades.EncriptarSHA256(cambiarClaveDTO.ClaveActual))
             {
-                return Unauthorized(new { isSuccess = false, mesasge = "La clave actual es incorrecta." });
+                return BadRequest(new { isSuccess = false, mesasge = "La clave actual es incorrecta." });
             }
 
             // Actualiza la clave del usuario con la nueva clave (encriptada)
