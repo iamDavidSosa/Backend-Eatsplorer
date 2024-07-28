@@ -97,7 +97,7 @@ namespace PROYECTO_PRUEBA.Controllers
             else return Ok(new { exists = true, token = _utilidades.GenerarToken(usuarioEncontrado), id_usuario = usuarioEncontrado.id_usuario });
         }
 
-
+        // POST: api/Acceso/google-login
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLogin([FromBody] LoginGoogleDTO googleLoginDTO)
         {
