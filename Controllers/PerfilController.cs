@@ -7,6 +7,7 @@ using PROYECTO_PRUEBA.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using PROYECTO_PRUEBA.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -22,31 +23,26 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
         // POST: api/Perfil
-        [HttpPost("perfil")]
-        public async Task<IActionResult> GetPerfil([FromBody] PerfilDTO perfilDTO)
+        [HttpGet("perfil")]
+        public async Task<IActionResult> GetPerfil()
         {
-            var usuario = await _context.Usuarios.FindAsync(perfilDTO.id_usuario);
+            // Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, mesasge = "Usuario no autenticado." });
+            }
+
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            var usuario = await _context.Usuarios.FindAsync(idUsuario);
 
             if (usuario == null)
             {
-                return NotFound("Usuario no encontrado");
+                return NotFound(new { isSuccess = false, mesasge = "Usuario no encontrado" });
             }
 
-            return Ok(usuario);
-        }
-
-        // GET: api/Perfil/1
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPerfil(int id)
-        {
-            var usuario = await _context.Usuarios.FindAsync(id);
-
-            if (usuario == null)
-            {
-                return NotFound("Usuario no encontrado");
-            }
-
-            return Ok(usuario);
+            return Ok(new { isSuccess = true, usuario });
         }
 
         [HttpPut("{id}")]

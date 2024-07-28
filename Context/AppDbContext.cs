@@ -26,6 +26,8 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Medida> Medida { get; set; }
 
+        public DbSet<Detalles_Usuario> Detalles_Usuarios { get; set; }
+
        // public DbSet<Despensa> Despensa { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
