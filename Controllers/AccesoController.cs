@@ -132,7 +132,7 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpGet("github-login")]
         public IActionResult GitHubLogin()
         {
-            var clientId = "Ov23liyMUlVD4dfFzXMX";
+            var clientId = "Ov23liG2JWBOhTxJfG8B";
             var redirectUri = "https://api-eat.azurewebsites.net/api/Acceso/github-callback";
             var githubUrl = $"https://github.com/login/oauth/authorize?client_id={clientId}&scope=user:email&redirect_uri={redirectUri}";
             return Redirect(githubUrl);
@@ -205,8 +205,8 @@ namespace PROYECTO_PRUEBA.Controllers
             var request = new HttpRequestMessage(HttpMethod.Post, "https://github.com/login/oauth/access_token");
             request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-            var clientId = "Ov23liyMUlVD4dfFzXMX";
-            var clientSecret = "4437c5513ebdd6a5ebf83cb8f6f54c6c6a670a08";
+            var clientId = "Ov23liG2JWBOhTxJfG8B";
+            var clientSecret = "353e5180132be310353e348e34408ebb0a09d286";
             var requestData = new
             {
                 client_id = clientId,
