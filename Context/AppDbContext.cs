@@ -26,7 +26,7 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Medida> Medida { get; set; }
 
-        public DbSet<Detalles_Usuario> Detalles_Usuarios { get; set; }
+        public DbSet<Detalles_Usuario> Detalles_Usuario { get; set; }
 
        // public DbSet<Despensa> Despensa { get; set; }
 
@@ -37,6 +37,9 @@ namespace PROYECTO_PRUEBA.Context
 
             modelBuilder.Entity<Recetas_Guardadas>()
                 .HasKey(rg => new { rg.id_receta, rg.id_usuario });
+
+            modelBuilder.Entity<Detalles_Usuario>()
+                .HasKey(du => new { du.id_usuario, du.id_ingrediente });
 
             //modelBuilder.Entity<Despensa>()
                 //.HasNoKey();
