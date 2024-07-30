@@ -51,7 +51,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 _context.Recetas_Guardadas.Add(receta_guardada);
                 await _context.SaveChangesAsync();
 
-                // Devolver el ID de la receta recién guardada
+                
                 return Ok(new { message = "Ingreso exitoso" });
             }
             catch (Exception ex)
@@ -76,6 +76,30 @@ namespace PROYECTO_PRUEBA.Controllers
 
 
         }
+
+        [HttpGet("ListarPorDias/{dias}")]
+        public async Task<ActionResult<IEnumerable<Recetas_Guardadas>>> ListarPorDias(int dias)
+        {
+            try
+            {
+                // Calcular la fecha de hoy y la fecha correspondiente al número de días antes de hoy
+                DateTime fechaFin = DateTime.Now;
+                DateTime fechaInicio = fechaFin.AddDays(-dias);
+
+                // Filtrar las recetas guardadas por el intervalo de tiempo calculado
+                var recetas_guardadas = await _context.Recetas_Guardadas
+                    .Where(r => r.fecha_acceso >= fechaInicio && r.fecha_acceso <= fechaFin)
+                    .ToListAsync();
+
+                return Ok(recetas_guardadas);
+            }
+            catch (Exception ex)
+            {
+                // Retornar un error 500 si ocurre una excepción
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+            }
+        }
+
 
     }
 }
