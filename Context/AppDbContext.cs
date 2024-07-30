@@ -28,7 +28,9 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Detalles_Usuario> Detalles_Usuario { get; set; }
 
-       // public DbSet<Despensa> Despensa { get; set; }
+        // public DbSet<Despensa> Despensa { get; set; }
+
+        public DbSet<Dias> Dias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,23 +49,6 @@ namespace PROYECTO_PRUEBA.Context
             base.OnModelCreating(modelBuilder);
         }
 
-        /*  protected override void OnModelCreating(ModelBuilder modelBuilder)
-          {
-              // Configura la clave primaria compuesta para la tabla intermedia Recetas_Ingredientes
-              modelBuilder.Entity<Recetas_Ingredientes>()
-                  .HasKey(ri => new { ri.id_receta, ri.id_ingrediente });
-
-              // Configura la relación muchos a muchos entre Receta y Ingrediente a través de Recetas_Ingredientes
-              modelBuilder.Entity<Recetas_Ingredientes>()
-                  .HasOne(ri => ri.Recetas)
-                  .WithMany(r => r.Recetas_Ingredientes)
-                  .HasForeignKey(ri => ri.id_receta);
-
-
-              modelBuilder.Entity<Recetas_Ingredientes>()
-                  .HasOne(ri => ri.Ingrediente)
-                  .WithMany(i => i.Recetas_Ingredientes)
-                  .HasForeignKey(ri => ri.id_ingrediente);
-          }*/
+       
     }
 }
