@@ -32,6 +32,14 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Dias> Dias { get; set; }
 
+        public DbSet<Tags> Tags { get; set; }
+
+        public DbSet<Categoria> Categoria { get; set; }
+
+        public DbSet<TagsCategorias> TagsCategorias { get; set; }
+
+        public DbSet<RecetasTags> RecetasTags { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Recetas_Ingredientes>()
