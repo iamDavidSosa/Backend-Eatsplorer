@@ -77,14 +77,22 @@ namespace PROYECTO_PRUEBA.Controllers
 
         }
 
-        [HttpGet("ListarPorDias/{dias}")]
-        public async Task<ActionResult<IEnumerable<Recetas_Guardadas>>> ListarPorDias(int dias)
+        [HttpGet("ListarPorDias")]
+        public async Task<ActionResult<IEnumerable<Recetas_Guardadas>>> ListarPorDias()
         {
             try
             {
+                // Obtener el número de días desde la base de datos
+                var diasConfig = await _context.Dias.FirstOrDefaultAsync(); // Obtiene el primer registro de la tabla
+
+                if (diasConfig == null)
+                {
+                    return NotFound("No se encontró la configuración de días.");
+                }
+
                 // Calcular la fecha de hoy y la fecha correspondiente al número de días antes de hoy
                 DateTime fechaFin = DateTime.Now;
-                DateTime fechaInicio = fechaFin.AddDays(-dias);
+                DateTime fechaInicio = fechaFin.AddDays(-diasConfig.dias);
 
                 // Filtrar las recetas guardadas por el intervalo de tiempo calculado
                 var recetas_guardadas = await _context.Recetas_Guardadas
@@ -99,6 +107,8 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
             }
         }
+
+
 
 
     }
