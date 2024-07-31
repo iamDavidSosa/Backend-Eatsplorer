@@ -8,7 +8,6 @@ namespace PROYECTO_PRUEBA.Models
         public int id_ingrediente { get; set; }
         public string nombre { get; set; }
 
-      //  public ICollection<Recetas_Ingredientes> Recetas_Ingredientes { get; set; }
 
     }
 }
