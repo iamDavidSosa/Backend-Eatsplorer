@@ -6,6 +6,6 @@ namespace PROYECTO_PRUEBA.Models
     {
         [Key]
         public int id_tag { get; set; }
-        public int nombre { get; set; }
+        public string nombre { get; set; }
     }
 }
