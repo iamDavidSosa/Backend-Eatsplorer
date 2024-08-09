@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -61,14 +62,21 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-        [HttpGet("BuscarPorNombre/{nombre}")]
-        public async Task<ActionResult<IEnumerable<Ingredientes>>> BuscarPorNombre(string nombre)
+        // POST: api/Ingredientes/BuscarPorNombre
+        [HttpPost("BuscarPorNombre")]
+        public async Task<ActionResult<IEnumerable<Ingredientes>>> BuscarPorNombre([FromBody] IngredienteDTO request)
         {
+            if (request == null || string.IsNullOrWhiteSpace(request.Nombre))
+            {
+                return BadRequest("Invalid name.");
+            }
+
             try
             {
                 var ingredientes = await _context.Ingredientes
-                    .Where(i => EF.Functions.Like(i.nombre, $"%{nombre}%"))
+                    .Where(i => EF.Functions.Like(i.nombre, $"%{request.Nombre}%"))
                     .ToListAsync();
+
                 return Ok(ingredientes);
             }
             catch (Exception ex)
@@ -76,5 +84,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error al buscar los ingredientes: {ex.Message}");
             }
         }
+
+
     }
 }
