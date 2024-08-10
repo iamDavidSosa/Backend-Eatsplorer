@@ -5,6 +5,7 @@ using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using Microsoft.EntityFrameworkCore;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -112,6 +113,40 @@ namespace PROYECTO_PRUEBA.Controllers
                     .ToListAsync();
 
                 return Ok(recetasSinIngredientes);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de la excepción y retorno de un mensaje de error
+                return StatusCode(500, new { mensaje = "Ocurrió un error al buscar las recetas.", detalle = ex.Message });
+            }
+        }
+
+
+        [HttpPost("BuscarPorTag")]
+        public async Task<IActionResult> BuscarRecetasPorTag([FromBody] TagsDTO request)
+        {
+            try
+            {
+                // Obtiene los IDs de los tags basados en los nombres proporcionados
+                var tags = await _context.Tags
+                    .Where(t => request.NombresTags.Contains(t.nombre))
+                    .Select(t => t.id_tag)
+                    .ToListAsync();
+
+                // Consulta para obtener los IDs de las recetas que contienen todos los tags especificados
+                var recetasIds = await _context.RecetasTags
+                    .Where(rt => tags.Contains(rt.id_tag))
+                    .GroupBy(rt => rt.id_receta)
+                    .Where(g => g.Count() == tags.Count)
+                    .Select(g => g.Key)
+                    .ToListAsync();
+
+                // Consulta para obtener las recetas basadas en los IDs obtenidos
+                var recetas = await _context.Recetas
+                    .Where(r => recetasIds.Contains(r.id_receta))
+                    .ToListAsync();
+
+                return Ok(recetas);
             }
             catch (Exception ex)
             {
