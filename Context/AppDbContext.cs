@@ -28,7 +28,7 @@ namespace PROYECTO_PRUEBA.Context
 
         public DbSet<Detalles_Usuario> Detalles_Usuario { get; set; }
 
-        // public DbSet<Despensa> Despensa { get; set; }
+        public DbSet<Despensa> Despensa { get; set; }
 
         public DbSet<Dias> Dias { get; set; }
 
@@ -57,8 +57,8 @@ namespace PROYECTO_PRUEBA.Context
             modelBuilder.Entity<RecetasTags>()
                 .HasKey(rt => new { rt.id_receta, rt.id_tag });
 
-            //modelBuilder.Entity<Despensa>()
-            //.HasNoKey();
+            modelBuilder.Entity<Despensa>()
+            .HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
