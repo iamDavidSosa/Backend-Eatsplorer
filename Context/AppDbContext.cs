@@ -58,7 +58,7 @@ namespace PROYECTO_PRUEBA.Context
                 .HasKey(rt => new { rt.id_receta, rt.id_tag });
 
             modelBuilder.Entity<Despensa>()
-            .HasNoKey();
+                .HasKey(d => new { d.id_usuario, d.id_ingrediente });
 
             base.OnModelCreating(modelBuilder);
         }
