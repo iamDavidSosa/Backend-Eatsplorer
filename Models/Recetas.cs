@@ -13,10 +13,7 @@ namespace PROYECTO_PRUEBA.Models
         public string foto_receta { get; set; }
         public int usuario_id { get; set; }
         public DateTime fecha_creacion { get; set; }
-
-
-
-
-
+        public string ?porciones { get; set; }
+        public int ?likes { get; set; }
     }
 }
