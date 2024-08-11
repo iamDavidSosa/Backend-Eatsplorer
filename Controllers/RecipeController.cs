@@ -243,5 +243,39 @@ namespace PROYECTO_PRUEBA.Controllers
             return Ok(new { isSuccess = true, recetasSugeridas });
         }
 
+        [HttpGet("recetasDespensa")]
+        public async Task<IActionResult> ObtenerRecetasConDespensa()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
+
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            var recetas = await _context.Recetas.ToListAsync();
+
+            var recetasConDespensa = recetas.Where(r =>
+            {
+                var ingredientesReceta = _context.Recetas_Ingredientes
+                    .Where(ri => ri.id_receta == r.id_receta)
+                    .ToList();
+
+                bool tieneTodosLosIngredientes = ingredientesReceta.All(ir =>
+                {
+                    var ingredienteDespensa = _context.Despensa
+                        .FirstOrDefault(d => d.id_usuario == idUsuario && d.id_ingrediente == ir.id_ingrediente);
+
+                    return ingredienteDespensa != null;//&& ingredienteDespensa.cantidad >= ir.cantidad;
+                });
+
+                return tieneTodosLosIngredientes;
+            }).ToList();
+
+            return Ok(new { isSuccess = true, recetasConDespensa });
+        }
+
+
     }
 }
