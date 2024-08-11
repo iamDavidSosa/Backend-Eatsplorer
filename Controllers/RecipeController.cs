@@ -267,7 +267,7 @@ namespace PROYECTO_PRUEBA.Controllers
                     var ingredienteDespensa = _context.Despensa
                         .FirstOrDefault(d => d.id_usuario == idUsuario && d.id_ingrediente == ir.id_ingrediente);
 
-                    return ingredienteDespensa != null;//&& ingredienteDespensa.cantidad >= ir.cantidad;
+                    return ingredienteDespensa != null && ingredienteDespensa.cantidad >= ir.cantidad;
                 });
 
                 return tieneTodosLosIngredientes;
