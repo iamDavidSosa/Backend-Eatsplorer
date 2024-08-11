@@ -7,7 +7,7 @@ namespace PROYECTO_PRUEBA.Models
         [Key]
         public int id_ingrediente { get; set; }
         public string nombre { get; set; }
-
-
+        public string medida { get; set; }
+        public int dias_vencimiento { get; set; }
     }
 }
