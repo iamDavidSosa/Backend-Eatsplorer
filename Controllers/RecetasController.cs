@@ -16,11 +16,11 @@ namespace PROYECTO_PRUEBA.Controllers
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
-    public class RecipeController : ControllerBase
+    public class RecetasController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public RecipeController(AppDbContext context)
+        public RecetasController(AppDbContext context)
         {
             _context = context;
         }
