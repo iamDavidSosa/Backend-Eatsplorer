@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Models.DTOs;
 using System.Globalization;
 using System.Text;
+using System.Security.Claims;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -191,6 +192,56 @@ namespace PROYECTO_PRUEBA.Controllers
                 .Aggregate(string.Empty, (current, c) => current + c);
         }
 
+        [HttpGet("recetasSugeridas")]
+        public async Task<IActionResult> ObtenerRecetasSugeridas()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
+
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            var ingredientesGusta = await _context.Detalles_Usuario
+                .Where(du => du.id_usuario == idUsuario && du.tipo == 1)
+                .Select(du => du.id_ingrediente)
+                .ToListAsync();
+
+            var ingredientesNoConsume = await _context.Detalles_Usuario
+                .Where(du => du.id_usuario == idUsuario && du.tipo == 2)
+                .Select(du => du.id_ingrediente)
+                .ToListAsync();
+
+            var ingredientesAlergico = await _context.Detalles_Usuario
+                .Where(du => du.id_usuario == idUsuario && du.tipo == 3)
+                .Select(du => du.id_ingrediente)
+                .ToListAsync();
+
+            var recetas = await _context.Recetas.ToListAsync();
+
+            var recetasFiltradas = recetas.Where(r =>
+                !_context.Recetas_Ingredientes
+                .Where(ri => ri.id_receta == r.id_receta)
+                .Any(ri => ingredientesAlergico.Contains(ri.id_ingrediente))
+            ).ToList();
+
+            var recetasSugeridas = recetasFiltradas.Where(r =>
+            {
+                var ingredientesReceta = _context.Recetas_Ingredientes
+                    .Where(ri => ri.id_receta == r.id_receta)
+                    .Select(ri => ri.id_ingrediente)
+                    .ToList();
+
+                var contieneGustos = ingredientesGusta.Any(i => ingredientesReceta.Contains(i));
+                var contieneNoConsume = ingredientesNoConsume.Any(i => ingredientesReceta.Contains(i));
+                var noSoloNoConsume = !contieneNoConsume || ingredientesReceta.Count(i => ingredientesNoConsume.Contains(i)) < ingredientesReceta.Count;
+
+                return contieneGustos && noSoloNoConsume;
+            }).ToList();
+
+            return Ok(new { isSuccess = true, recetasSugeridas });
+        }
 
     }
 }
