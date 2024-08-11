@@ -162,7 +162,7 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("Buscar")]
         public async Task<ActionResult<IEnumerable<Recetas>>> Buscar([FromBody] RecetasDTO request)
         {
-            if (request == null || string.IsNullOrEmpty(request.Query))
+            if (request == null || string.IsNullOrEmpty(request.titulo))
             {
                 return BadRequest("El parámetro de búsqueda no puede estar vacío.");
             }
@@ -171,7 +171,7 @@ namespace PROYECTO_PRUEBA.Controllers
             var recetas = await _context.Recetas.ToListAsync();
 
             // Normaliza la búsqueda para ignorar mayúsculas, minúsculas y acentos
-            var normalizedQuery = request.Query.Normalize(NormalizationForm.FormD);
+            var normalizedQuery = request.titulo.Normalize(NormalizationForm.FormD);
             var accentsRemovedQuery = new string(normalizedQuery
                 .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
                 .ToArray());

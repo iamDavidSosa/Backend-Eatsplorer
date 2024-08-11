@@ -6,6 +6,8 @@ using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using PROYECTO_PRUEBA.Models.DTOs;
+using System.Globalization;
+using System.Text;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -63,7 +65,7 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
         // POST: api/Ingredientes/BuscarPorNombre
-        [HttpPost("BuscarPorNombre")]
+        [HttpPost("ListarPorNombre")]
         public async Task<ActionResult<IEnumerable<Ingredientes>>> BuscarPorNombre([FromBody] IngredienteDTO request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Nombre))
@@ -85,6 +87,36 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
+        [HttpPost("Buscar")]
+        public async Task<ActionResult<IEnumerable<Ingredientes>>> Buscar([FromBody] IngredienteDTO request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Nombre))
+            {
+                return BadRequest("El parámetro de búsqueda no puede estar vacío.");
+            }
 
+            // Obtén todos los ingredientes
+            var ingredientes = await _context.Ingredientes.ToListAsync();
+
+            // Normaliza la búsqueda para ignorar mayúsculas, minúsculas y acentos
+            var normalizedQuery = request.Nombre.Normalize(NormalizationForm.FormD);
+            var accentsRemovedQuery = new string(normalizedQuery
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                .ToArray());
+
+            // Filtra los ingredientes en memoria
+            var resultados = ingredientes
+                .Where(i => RemoveAccents(i.nombre).ToLower().Contains(accentsRemovedQuery.ToLower()))
+                .ToList();
+
+            return Ok(resultados);
+        }
+
+        private string RemoveAccents(string text)
+        {
+            return text.Normalize(NormalizationForm.FormD)
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                .Aggregate(string.Empty, (current, c) => current + c);
+        }
     }
 }

@@ -2,6 +2,6 @@
 {
     public class RecetasDTO
     {
-        public string Query { get; set; }
+        public string titulo { get; set; }
     }
 }
