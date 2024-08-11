@@ -6,6 +6,8 @@ using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Models.DTOs;
+using System.Globalization;
+using System.Text;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -153,6 +155,40 @@ namespace PROYECTO_PRUEBA.Controllers
                 // Manejo de la excepción y retorno de un mensaje de error
                 return StatusCode(500, new { mensaje = "Ocurrió un error al buscar las recetas.", detalle = ex.Message });
             }
+        }
+
+
+
+        [HttpPost("Buscar")]
+        public async Task<ActionResult<IEnumerable<Recetas>>> Buscar([FromBody] RecetasDTO request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Query))
+            {
+                return BadRequest("El parámetro de búsqueda no puede estar vacío.");
+            }
+
+            // Obtén todas las recetas
+            var recetas = await _context.Recetas.ToListAsync();
+
+            // Normaliza la búsqueda para ignorar mayúsculas, minúsculas y acentos
+            var normalizedQuery = request.Query.Normalize(NormalizationForm.FormD);
+            var accentsRemovedQuery = new string(normalizedQuery
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                .ToArray());
+
+            // Filtra las recetas en memoria
+            var resultados = recetas
+                .Where(r => RemoveAccents(r.titulo).ToLower().Contains(accentsRemovedQuery.ToLower()))
+                .ToList();
+
+            return Ok(resultados);
+        }
+
+        private string RemoveAccents(string text)
+        {
+            return text.Normalize(NormalizationForm.FormD)
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                .Aggregate(string.Empty, (current, c) => current + c);
         }
 
 
