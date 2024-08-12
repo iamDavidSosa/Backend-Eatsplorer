@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -21,7 +22,6 @@ namespace PROYECTO_PRUEBA.Controllers
         public Recuperar_ContrasenaController(AppDbContext context, Utilidades utilidades)
         {
             _context = context;
-            _utilidades = utilidades;
             _utilidades = utilidades;
         }
 
@@ -78,63 +78,7 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
-
-
-
-        // GET: api/Recuperar_Contrasena
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recuperar_Contrasena>>> GetRecuperar_Contrasena()
-        {
-            return await _context.Recuperar_Contrasena.ToListAsync();
-        }
-
-        // GET: api/Recuperar_Contrasena/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Recuperar_Contrasena>> GetRecuperar_Contrasena(int id)
-        {
-            var recuperar_Contrasena = await _context.Recuperar_Contrasena.FindAsync(id);
-
-            if (recuperar_Contrasena == null)
-            {
-                return NotFound();
-            }
-
-            return recuperar_Contrasena;
-        }
-
-        // PUT: api/Recuperar_Contrasena/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecuperar_Contrasena(int id, Recuperar_Contrasena recuperar_Contrasena)
-        {
-            if (id != recuperar_Contrasena.IdRecuperarContrasena)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(recuperar_Contrasena).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!Recuperar_ContrasenaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/Recuperar_Contrasena
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Recuperar_Contrasena>> PostRecuperar_Contrasena(Recuperar_Contrasena recuperar_Contrasena)
         {
@@ -144,25 +88,85 @@ namespace PROYECTO_PRUEBA.Controllers
             return CreatedAtAction("GetRecuperar_Contrasena", new { id = recuperar_Contrasena.IdRecuperarContrasena }, recuperar_Contrasena);
         }
 
-        // DELETE: api/Recuperar_Contrasena/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRecuperar_Contrasena(int id)
+
+        // GET: api/Recuperar_Contrasena
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Recuperar_Contrasena>>> GetRecuperar_Contrasena()
         {
-            var recuperar_Contrasena = await _context.Recuperar_Contrasena.FindAsync(id);
-            if (recuperar_Contrasena == null)
-            {
-                return NotFound();
-            }
-
-            _context.Recuperar_Contrasena.Remove(recuperar_Contrasena);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await _context.Recuperar_Contrasena.ToListAsync();
         }
+
 
         private bool Recuperar_ContrasenaExists(int id)
         {
             return _context.Recuperar_Contrasena.Any(e => e.IdRecuperarContrasena == id);
         }
+
+
+        [HttpPut]
+        public async Task<IActionResult> ActualizarRecuperarContrasena([FromBody] Recuperar_ContrasenaDTO request)
+        {
+            if (request == null || request.IdRecuperarContrasena <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                // Encuentra el registro por Id
+                var recuperarContrasena = await _context.Recuperar_Contrasena.FindAsync(request.IdRecuperarContrasena);
+
+                if (recuperarContrasena == null)
+                {
+                    return NotFound("Registro no encontrado.");
+                }
+
+                // Actualiza el campo 'respuesta'
+                recuperarContrasena.respuesta = request.respuesta;
+
+                // Guarda los cambios en la base de datos
+                await _context.SaveChangesAsync();
+
+                return Ok("Registro actualizado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al actualizar el registro: {ex.Message}");
+            }
+        }
+    
+
+
+    [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] RecuperarEliminarDTO request)
+        {
+            if (request == null || request.IdRecuperarContrasena <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                // Encuentra el registro en la tabla Recuperar_Contrasena
+                var recuperarContrasena = await _context.Recuperar_Contrasena
+                    .FindAsync(request.IdRecuperarContrasena);
+
+                if (recuperarContrasena == null)
+                {
+                    return NotFound("Registro no encontrado.");
+                }
+
+                // Elimina el registro de la base de datos
+                _context.Recuperar_Contrasena.Remove(recuperarContrasena);
+                await _context.SaveChangesAsync();
+
+                return Ok("Registro eliminado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el registro: {ex.Message}");
+            }
+        }
+
     }
 }

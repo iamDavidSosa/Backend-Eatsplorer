@@ -159,7 +159,6 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
-
         [HttpPost("Buscar")]
         public async Task<ActionResult<IEnumerable<Recetas>>> Buscar([FromBody] RecetasDTO request)
         {
@@ -274,6 +273,70 @@ namespace PROYECTO_PRUEBA.Controllers
             }).ToList();
 
             return Ok(new { isSuccess = true, recetasConDespensa });
+        }
+
+
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] RecetasEliminarDTO request)
+        {
+            if (request == null || request.id_receta <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var receta = await _context.Recetas.FindAsync(request.id_receta);
+
+                if (receta == null)
+                {
+                    return NotFound("Receta no encontrada.");
+                }
+
+                _context.Recetas.Remove(receta);
+                await _context.SaveChangesAsync();
+
+                return Ok("Receta eliminada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el ingrediente: {ex.Message}");
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> ActualizarReceta([FromBody] RecetasActualizarDTO request)
+        {
+            if (request == null || request.id_receta <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var receta = await _context.Recetas.FindAsync(request.id_receta);
+
+                if (receta == null)
+                {
+                    return NotFound("Receta no encontrada.");
+                }
+
+                // Actualiza los campos del registro
+                receta.titulo = request.titulo;
+                receta.descripcion = request.descripcion;
+                receta.instrucciones = request.instrucciones;
+                receta.foto_receta = request.foto_receta;
+                receta.porciones = request.porciones;
+
+                // Guarda los cambios en la base de datos
+                await _context.SaveChangesAsync();
+
+                return Ok("Receta actualizada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
         }
 
 

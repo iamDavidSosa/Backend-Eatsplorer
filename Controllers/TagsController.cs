@@ -5,6 +5,8 @@ using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using Microsoft.EntityFrameworkCore;
+using PROYECTO_PRUEBA.Models.DTOs;
+using Azure;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -77,5 +79,35 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error al asignar la categoría: {ex.Message}");
             }
         }
+
+
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] TagsEliminarDTO request)
+        {
+            if (request == null || request.id_tag <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var tag = await _context.Tags.FindAsync(request.id_tag);
+
+                if (tag == null)
+                {
+                    return NotFound("Tag no encontrada.");
+                }
+
+                _context.Tags.Remove(tag);
+                await _context.SaveChangesAsync();
+
+                return Ok("Tag eliminada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar la tag: {ex.Message}");
+            }
+        }
+
     }
 }

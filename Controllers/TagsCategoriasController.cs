@@ -84,6 +84,35 @@ namespace PROYECTO_PRUEBA.Controllers
             return Ok(tags);
         }
 
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> EliminarTagCategoria([FromBody] TagsCatgoriasDTO request)
+        {
+            if (request == null || request.id_tag <= 0 || request.id_categoria <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
 
+            try
+            {
+                // Encuentra el registro que quieres eliminar
+                var tagCategoria = await _context.TagsCategorias
+                    .FirstOrDefaultAsync(tc => tc.id_tag == request.id_tag && tc.id_categoria == request.id_categoria);
+
+                if (tagCategoria == null)
+                {
+                    return NotFound("Registro no encontrado.");
+                }
+
+                // Elimina el registro
+                _context.TagsCategorias.Remove(tagCategoria);
+                await _context.SaveChangesAsync();
+
+                return Ok("Registro eliminado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el registro: {ex.Message}");
+            }
+        }
     }
 }

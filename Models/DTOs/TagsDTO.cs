@@ -4,4 +4,9 @@
     {
         public List<string> NombresTags { get; set; }
     }
+
+    public class TagsEliminarDTO
+    {
+        public int id_tag { get; set; }
+    }
 }

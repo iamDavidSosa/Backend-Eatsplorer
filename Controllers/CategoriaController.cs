@@ -4,6 +4,7 @@ using PROYECTO_PRUEBA.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Models;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -53,6 +54,34 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
+
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] CategoriaEliminarDTO request)
+        {
+            if (request == null || request.id_categoria <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var categoria = await _context.Categoria.FindAsync(request.id_categoria);
+
+                if (categoria == null)
+                {
+                    return NotFound("Categoría no encontrada.");
+                }
+
+                _context.Categoria.Remove(categoria);
+                await _context.SaveChangesAsync();
+
+                return Ok("Categoría eliminada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar la categoría: {ex.Message}");
+            }
+        }
 
     }
 }

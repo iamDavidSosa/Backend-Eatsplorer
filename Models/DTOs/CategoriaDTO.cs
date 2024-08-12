@@ -4,4 +4,9 @@
     {
         public string NombreCategoria { get; set; }
     }
+
+    public class CategoriaEliminarDTO
+    {
+        public int id_categoria { get; set; }
+    }
 }

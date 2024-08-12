@@ -5,6 +5,7 @@ using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using Microsoft.EntityFrameworkCore;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -55,5 +56,37 @@ namespace PROYECTO_PRUEBA.Controllers
 
 
         }
+
+        [HttpPut]
+        public async Task<IActionResult> ActualizarDia([FromBody] DiasDTO request)
+        {
+            if (request == null || request.id_dias <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var dia = await _context.Dias.FindAsync(request.id_dias);
+
+                if (dia == null)
+                {
+                    return NotFound("Día no encontrado.");
+                }
+
+                // Actualiza el campo 'dias' del registro
+                dia.dias = request.dias;
+
+                // Guarda los cambios en la base de datos
+                await _context.SaveChangesAsync();
+
+                return Ok("Día actualizado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
     }
 }

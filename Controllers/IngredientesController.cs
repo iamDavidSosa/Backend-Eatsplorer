@@ -118,5 +118,36 @@ namespace PROYECTO_PRUEBA.Controllers
                 .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
                 .Aggregate(string.Empty, (current, c) => current + c);
         }
+
+
+
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] IngredienteEliminarDTO request)
+        {
+            if (request == null || request.id_ingrediente <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            try
+            {
+                var ingrediente = await _context.Ingredientes.FindAsync(request.id_ingrediente);
+
+                if (ingrediente == null)
+                {
+                    return NotFound("Ingrediente no encontrado.");
+                }
+
+                _context.Ingredientes.Remove(ingrediente);
+                await _context.SaveChangesAsync();
+
+                return Ok("Ingrediente eliminado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el ingrediente: {ex.Message}");
+            }
+        }
+
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
+using PROYECTO_PRUEBA.Models.DTOs;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -109,7 +110,36 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] Recetas_GuardadasDTO request)
+        {
+            if (request == null || request.id_receta <= 0 || request.id_usuario <= 0)
+            {
+                return BadRequest("Datos inválidos.");
+            }
 
+            try
+            {
+                // Encuentra el registro que quieres eliminar
+                var recetaGuardada = await _context.Recetas_Guardadas
+                    .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == request.id_usuario);
+
+                if (recetaGuardada == null)
+                {
+                    return NotFound("Registro no encontrado.");
+                }
+
+                // Elimina el registro
+                _context.Recetas_Guardadas.Remove(recetaGuardada);
+                await _context.SaveChangesAsync();
+
+                return Ok("Registro eliminado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el registro: {ex.Message}");
+            }
+        }
 
     }
 }

@@ -4,4 +4,9 @@
     {
         public string Nombre { get; set; }
     }
+
+    public class IngredienteEliminarDTO
+    {
+        public int id_ingrediente { get; set; }
+    }
 }
