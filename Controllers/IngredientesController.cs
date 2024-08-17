@@ -34,21 +34,38 @@ namespace PROYECTO_PRUEBA.Controllers
 
                 if (existingIngrediente != null)
                 {
-                    return Ok();
+                    // Si el ingrediente ya existe, devolver los datos del ingrediente existente
+                    return Ok(new
+                    {
+                        isSuccess = false,
+                        message = "El ingrediente ya existe.",
+                        ingrediente = existingIngrediente
+                    });
                 }
 
-                // Agregamos el ingrediente a la base de datos
+                // Agregar el ingrediente a la base de datos
                 _context.Ingredientes.Add(ingrediente);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { message = "Ingrediente ingresado con éxito.", id_ingrediente = ingrediente.id_ingrediente });
+                // Devolver el ID del ingrediente recién guardado
+                return Ok(new
+                {
+                    isSuccess = true,
+                    message = "Ingrediente ingresado con éxito.",
+                    id_ingrediente = ingrediente.id_ingrediente
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al ingresar el ingrediente: {ex.Message}");
+                // Manejar el error y devolver el mensaje de error
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    isSuccess = false,
+                    message = $"Error al ingresar el ingrediente: {ex.Message}"
+                });
             }
-
         }
+
 
         [HttpGet("Listar")]
         public async Task<ActionResult<IEnumerable<Ingredientes>>> Listar()
