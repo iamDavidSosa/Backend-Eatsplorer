@@ -96,7 +96,7 @@ namespace PROYECTO_PRUEBA.Controllers
         //}
 
 
-        [HttpPost("BuscarPorNombre")]
+        [HttpGet("BuscarPorNombre")]
         public async Task<IActionResult> BuscarRecetasPorNombre([FromBody] RecetasDTO request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -151,7 +151,7 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-        [HttpPost("BuscarPorIngrediente")]
+        [HttpGet("BuscarPorIngrediente")]
         public async Task<IActionResult> BuscarRecetas([FromBody] IngredientesRequest2 request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -205,7 +205,7 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-        [HttpPost("BuscarSinIngrediente")]
+        [HttpGet("BuscarSinIngrediente")]
         public async Task<IActionResult> BuscarRecetasSinIngredientes([FromBody] IngredientesRequest2 request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -255,7 +255,7 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-        [HttpPost("BuscarPorTag")]
+        [HttpGet("BuscarPorTag")]
         public async Task<IActionResult> BuscarRecetasPorTag([FromBody] TagsDTO2 request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
