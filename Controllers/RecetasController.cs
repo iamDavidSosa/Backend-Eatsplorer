@@ -99,6 +99,11 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("BuscarPorNombre")]
         public async Task<IActionResult> BuscarRecetasPorNombre([FromBody] RecetasDTO request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
             try
             {
                 if (string.IsNullOrEmpty(request.titulo))
@@ -149,6 +154,11 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("BuscarPorIngrediente")]
         public async Task<IActionResult> BuscarRecetas([FromBody] IngredientesRequest2 request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
             try
             {
                 var ingredientes = request.Id_Ingredientes;
@@ -198,6 +208,11 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("BuscarSinIngrediente")]
         public async Task<IActionResult> BuscarRecetasSinIngredientes([FromBody] IngredientesRequest2 request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
             try
             {
                 var ingredientesIds = request.Id_Ingredientes;
@@ -243,6 +258,11 @@ namespace PROYECTO_PRUEBA.Controllers
         [HttpPost("BuscarPorTag")]
         public async Task<IActionResult> BuscarRecetasPorTag([FromBody] TagsDTO2 request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
             try
             {
                 var tags = request.Id_Tags;
@@ -443,29 +463,53 @@ namespace PROYECTO_PRUEBA.Controllers
                 return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
             }
 
-            int idUsuario = int.Parse(userIdClaim.Value);
-
-            var recetas = await _context.Recetas.ToListAsync();
-
-            var recetasConDespensa = recetas.Where(r =>
+            int idUsuario;
+            if (!int.TryParse(userIdClaim.Value, out idUsuario))
             {
-                var ingredientesReceta = _context.Recetas_Ingredientes
-                    .Where(ri => ri.id_receta == r.id_receta)
-                    .ToList();
+                return Unauthorized(new { isSuccess = false, message = "ID de usuario inválido." });
+            }
 
-                bool tieneTodosLosIngredientes = ingredientesReceta.All(ir =>
-                {
-                    var ingredienteDespensa = _context.Despensa
-                        .FirstOrDefault(d => d.id_usuario == idUsuario && d.id_ingrediente == ir.id_ingrediente);
+            try
+            {
+                var recetasConDespensa = await _context.Recetas
+                    .Where(r => _context.Recetas_Ingredientes
+                        .Where(ri => ri.id_receta == r.id_receta)
+                        .All(ri => _context.Despensa
+                            .Where(d => d.id_usuario == idUsuario && d.id_ingrediente == ri.id_ingrediente)
+                            .Any(d => d.cantidad >= ri.cantidad)))
+                    .Select(r => new
+                    {
+                        r.id_receta,
+                        r.titulo,
+                        r.descripcion,
+                        r.instrucciones,
+                        r.foto_receta,
+                        r.usuario_id,
+                        r.fecha_creacion,
+                        r.porciones,
+                        r.likes,
+                        Ingredientes = _context.Recetas_Ingredientes
+                            .Where(ri => ri.id_receta == r.id_receta)
+                            .Join(_context.Ingredientes,
+                                  ri => ri.id_ingrediente,
+                                  i => i.id_ingrediente,
+                                  (ri, i) => new
+                                  {
+                                      i.id_ingrediente,
+                                      i.nombre,
+                                      ri.cantidad
+                                  }).ToList()
+                    })
+                    .ToListAsync();
 
-                    return ingredienteDespensa != null && ingredienteDespensa.cantidad >= ir.cantidad;
-                });
-
-                return tieneTodosLosIngredientes;
-            }).ToList();
-
-            return Ok(new { isSuccess = true, recetasConDespensa });
+                return Ok(new { isSuccess = true, recetasConDespensa });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al obtener las recetas.", detalle = ex.Message });
+            }
         }
+
 
 
         //[HttpDelete("Eliminar")]
