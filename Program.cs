@@ -21,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conn
 
 builder.Services.AddSingleton<Utilidades>();
 
+builder.Services.AddScoped<ImageUploadService>();
+
 builder.Services.AddAuthentication(config =>
 {
     config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,6 +41,8 @@ builder.Services.AddAuthentication(config =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
+
+
 
 builder.Services.AddCors(options =>
 {
