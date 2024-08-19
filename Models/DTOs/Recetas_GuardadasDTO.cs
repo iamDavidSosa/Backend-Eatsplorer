@@ -3,7 +3,7 @@
     public class Recetas_GuardadasDTO
     {
         public int id_receta { get; set; }
-        public int id_usuario { get; set; }
+       // public int id_usuario { get; set; }
     }
 
     public class UsuarioIdDTO
