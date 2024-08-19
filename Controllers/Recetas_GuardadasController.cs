@@ -22,38 +22,86 @@ namespace PROYECTO_PRUEBA.Controllers
             _context = context;
         }
 
+        /*  [HttpPost("Ingresar")]
+          public async Task<IActionResult> Ingresar([FromBody] Recetas_Guardadas receta_guardada)
+          {
+              if (receta_guardada == null)
+              {
+                  return BadRequest("Datos de la receta guardada no válidos.");
+              }
+
+              // Verificar que la receta y el usuario existan antes de agregar la receta guardada
+              var recetaExiste = await _context.Recetas.AnyAsync(r => r.id_receta == receta_guardada.id_receta);
+              var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.id_usuario == receta_guardada.id_usuario);
+
+              if (!recetaExiste)
+              {
+                  return NotFound("La receta especificada no existe.");
+              }
+
+              if (!usuarioExiste)
+              {
+                  return NotFound("El usuario especificado no existe.");
+              }
+
+              try
+              {
+                  // Establecer la fecha de creación a la fecha actual
+                  receta_guardada.fecha_acceso = DateTime.Now;
+
+                  // Agregamos la receta guardada a la base de datos
+                  _context.Recetas_Guardadas.Add(receta_guardada);
+                  await _context.SaveChangesAsync();
+
+
+                  return Ok(new { message = "Ingreso exitoso" });
+              }
+              catch (Exception ex)
+              {
+                  return StatusCode(StatusCodes.Status500InternalServerError, $"Error al ingresar la receta: {ex.Message}");
+              }
+          }
+          */
+
+
         [HttpPost("Ingresar")]
-        public async Task<IActionResult> Ingresar([FromBody] Recetas_Guardadas receta_guardada)
+        public async Task<IActionResult> Ingresar([FromBody] Recetas_GuardadasDTO receta_guardadaDTO)
         {
-            if (receta_guardada == null)
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            if (receta_guardadaDTO == null)
             {
                 return BadRequest("Datos de la receta guardada no válidos.");
             }
 
-            // Verificar que la receta y el usuario existan antes de agregar la receta guardada
-            var recetaExiste = await _context.Recetas.AnyAsync(r => r.id_receta == receta_guardada.id_receta);
-            var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.id_usuario == receta_guardada.id_usuario);
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            // Verificar que la receta exista antes de agregar la receta guardada
+            var recetaExiste = await _context.Recetas.AnyAsync(r => r.id_receta == receta_guardadaDTO.id_receta);
 
             if (!recetaExiste)
             {
                 return NotFound("La receta especificada no existe.");
             }
 
-            if (!usuarioExiste)
-            {
-                return NotFound("El usuario especificado no existe.");
-            }
-
             try
             {
-                // Establecer la fecha de creación a la fecha actual
-                receta_guardada.fecha_acceso = DateTime.Now;
+                var receta_guardada = new Recetas_Guardadas
+                {
+                    id_receta = receta_guardadaDTO.id_receta,
+                    id_usuario = idUsuario,
+                    fecha_acceso = DateTime.Now // Establecer la fecha de acceso a la fecha actual
+                };
 
-                // Agregamos la receta guardada a la base de datos
+                // Agregar la receta guardada a la base de datos
                 _context.Recetas_Guardadas.Add(receta_guardada);
                 await _context.SaveChangesAsync();
 
-                
                 return Ok(new { message = "Ingreso exitoso" });
             }
             catch (Exception ex)
@@ -61,25 +109,6 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error al ingresar la receta: {ex.Message}");
             }
         }
-
-
-        /*  [HttpGet("Listar")]
-          public async Task<ActionResult<IEnumerable<Recetas_Guardadas>>> Listar([FromBody] UsuarioIdDTO dto)
-          {
-              try
-              {
-                  // Filtra las recetas guardadas por el id_usuario
-                  var recetas_guardadas = await _context.Recetas_Guardadas
-                      .Where(r => r.id_usuario == dto.id_usuario)
-                      .ToListAsync();
-
-                  return Ok(recetas_guardadas);
-              }
-              catch (Exception ex)
-              {
-                  return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
-              }
-          }*/
 
 
         [HttpGet("Listar")]
@@ -143,39 +172,6 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al listar las recetas guardadas.", detalle = ex.Message });
             }
         }
-
-
-
-        /* [HttpGet("ListarPorDias")]
-         public async Task<ActionResult<IEnumerable<Recetas_Guardadas>>> ListarPorDias([FromBody] UsuarioIdDTO dto)
-         {
-             try
-             {
-                 // Obtener el número de días desde la base de datos
-                 var diasConfig = await _context.Dias.FirstOrDefaultAsync(); // Obtiene el primer registro de la tabla
-
-                 if (diasConfig == null)
-                 {
-                     return NotFound("No se encontró la configuración de días.");
-                 }
-
-                 // Calcular la fecha de hoy y la fecha correspondiente al número de días antes de hoy
-                 DateTime fechaFin = DateTime.Now;
-                 DateTime fechaInicio = fechaFin.AddDays(-diasConfig.dias);
-
-                 // Filtrar las recetas guardadas por el intervalo de tiempo calculado y el ID del usuario
-                 var recetas_guardadas = await _context.Recetas_Guardadas
-                     .Where(r => r.id_usuario == dto.id_usuario && r.fecha_acceso >= fechaInicio && r.fecha_acceso <= fechaFin)
-                     .ToListAsync();
-
-                 return Ok(recetas_guardadas);
-             }
-             catch (Exception ex)
-             {
-                 // Retornar un error 500 si ocurre una excepción
-                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
-             }
-         }*/
 
 
         [HttpGet("ListarPorDias")]
@@ -255,20 +251,29 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
-
         [HttpPut("ActualizarFechaAcceso")]
         public async Task<IActionResult> ActualizarFechaAcceso([FromBody] Recetas_GuardadasDTO request)
         {
-            if (request == null || request.id_receta <= 0 || request.id_usuario <= 0)
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            if (request == null || request.id_receta <= 0)
             {
                 return BadRequest("Datos inválidos.");
             }
+
 
             try
             {
                 // Encuentra el registro que quieres actualizar
                 var recetaGuardada = await _context.Recetas_Guardadas
-                    .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == request.id_usuario);
+                    .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == idUsuario);
 
                 if (recetaGuardada == null)
                 {
@@ -290,20 +295,61 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
+        /*  [HttpPut("ActualizarFechaAcceso")]
+           public async Task<IActionResult> ActualizarFechaAcceso([FromBody] Recetas_GuardadasDTO request)
+           {
+               if (request == null || request.id_receta <= 0 || request.id_usuario <= 0)
+               {
+                   return BadRequest("Datos inválidos.");
+               }
+
+               try
+               {
+                   // Encuentra el registro que quieres actualizar
+                   var recetaGuardada = await _context.Recetas_Guardadas
+                       .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == request.id_usuario);
+
+                   if (recetaGuardada == null)
+                   {
+                       return NotFound("Registro no encontrado.");
+                   }
+
+                   // Actualiza la fecha de acceso a la fecha y hora actual
+                   recetaGuardada.fecha_acceso = DateTime.Now;
+
+                   // Guarda los cambios en la base de datos
+                   await _context.SaveChangesAsync();
+
+                   return Ok("Fecha de acceso actualizada exitosamente.");
+               }
+               catch (Exception ex)
+               {
+                   return StatusCode(StatusCodes.Status500InternalServerError, $"Error al actualizar la fecha de acceso: {ex.Message}");
+               }
+           }*/
 
         [HttpDelete("Eliminar")]
         public async Task<IActionResult> Eliminar([FromBody] Recetas_GuardadasDTO request)
         {
-            if (request == null || request.id_receta <= 0 || request.id_usuario <= 0)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            int idUsuario = int.Parse(userIdClaim.Value);
+
+            if (request == null || request.id_receta <= 0)
             {
                 return BadRequest("Datos inválidos.");
             }
+
 
             try
             {
                 // Encuentra el registro que quieres eliminar
                 var recetaGuardada = await _context.Recetas_Guardadas
-                    .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == request.id_usuario);
+                    .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == idUsuario);
 
                 if (recetaGuardada == null)
                 {
@@ -321,6 +367,38 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el registro: {ex.Message}");
             }
         }
+
+
+        /*   [HttpDelete("Eliminar")]
+           public async Task<IActionResult> Eliminar([FromBody] Recetas_GuardadasDTO request)
+           {
+               if (request == null || request.id_receta <= 0 || request.id_usuario <= 0)
+               {
+                   return BadRequest("Datos inválidos.");
+               }
+
+               try
+               {
+                   // Encuentra el registro que quieres eliminar
+                   var recetaGuardada = await _context.Recetas_Guardadas
+                       .FirstOrDefaultAsync(rt => rt.id_receta == request.id_receta && rt.id_usuario == request.id_usuario);
+
+                   if (recetaGuardada == null)
+                   {
+                       return NotFound("Registro no encontrado.");
+                   }
+
+                   // Elimina el registro
+                   _context.Recetas_Guardadas.Remove(recetaGuardada);
+                   await _context.SaveChangesAsync();
+
+                   return Ok("Registro eliminado exitosamente.");
+               }
+               catch (Exception ex)
+               {
+                   return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar el registro: {ex.Message}");
+               }
+           }*/
 
     }
 }
