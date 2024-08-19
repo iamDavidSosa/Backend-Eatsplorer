@@ -78,7 +78,6 @@ namespace PROYECTO_PRUEBA.Controllers
                 int idUsuario = int.Parse(userIdClaim.Value);
 
                 var recetas = await _context.Recetas
-                    .Where(r => r.usuario_id == idUsuario)
                     .Select(r => new
                     {
                         r.id_receta,
