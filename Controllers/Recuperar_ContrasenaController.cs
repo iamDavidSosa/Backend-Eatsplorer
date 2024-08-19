@@ -26,11 +26,18 @@ namespace PROYECTO_PRUEBA.Controllers
         }
 
 
+        public class VerificarRespuestasDTO
+        {
+            public int IdUsuario { get; set; }
+            public string NuevaClave { get; set; }
+            public List<string> Respuestas { get; set; }
+        }
+
         [HttpPost("verificarRespuestas")]
-        public async Task<IActionResult> VerificarRespuestas(int idUsuario, string nuevaClave, [FromBody] List<string> respuestas)
+        public async Task<IActionResult> VerificarRespuestas([FromBody] VerificarRespuestasDTO dto)
         {
             // Consulta para obtener el usuario por su ID
-            var usuario = await _context.Usuarios.FindAsync(idUsuario);
+            var usuario = await _context.Usuarios.FindAsync(dto.IdUsuario);
 
             // Verifica si el usuario existe
             if (usuario == null)
@@ -40,18 +47,17 @@ namespace PROYECTO_PRUEBA.Controllers
 
             // Consulta para obtener todas las entradas de recuperación para el usuario especificado
             var recuperaciones = await _context.Recuperar_Contrasena
-                .Where(r => r.IdUsuario == idUsuario)
+                .Where(r => r.IdUsuario == dto.IdUsuario)
                 .ToListAsync();
 
             // Verifica si no se encontró ninguna recuperación para el usuario especificado
             if (recuperaciones == null || recuperaciones.Count == 0)
             {
-                // Devuelve un resultado NotFound con un mensaje si no se encontraron preguntas
                 return NotFound("No se encontraron preguntas para el usuario especificado.");
             }
 
             // Verifica que el número de respuestas proporcionadas sea igual al número de preguntas esperadas
-            if (recuperaciones.Count != respuestas.Count)
+            if (recuperaciones.Count != dto.Respuestas.Count)
             {
                 return BadRequest("El número de respuestas proporcionadas no coincide con el número de preguntas.");
             }
@@ -59,23 +65,21 @@ namespace PROYECTO_PRUEBA.Controllers
             // Compara cada respuesta proporcionada con las respuestas correctas
             for (int i = 0; i < recuperaciones.Count; i++)
             {
-                // Compara ignorando mayúsculas y minúsculas
-                if (!respuestas[i].Equals(recuperaciones[i].respuesta, StringComparison.OrdinalIgnoreCase))
+                if (!dto.Respuestas[i].Equals(recuperaciones[i].respuesta, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Si alguna respuesta no coincide, devuelve un error 401
                     return Unauthorized("Una o más respuestas son incorrectas.");
                 }
             }
 
             // Encriptar la nueva clave antes de asignarla al usuario
-            usuario.clave = _utilidades.EncriptarSHA256(nuevaClave);
+            usuario.clave = _utilidades.EncriptarSHA256(dto.NuevaClave);
 
             // Guarda los cambios en la base de datos
             await _context.SaveChangesAsync();
 
-            // Si todas las respuestas coinciden, devuelve un mensaje de éxito
             return Ok("La contraseña ha sido cambiada con éxito.");
         }
+
 
 
         // POST: api/Recuperar_Contrasena
