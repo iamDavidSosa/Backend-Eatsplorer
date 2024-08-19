@@ -118,7 +118,6 @@ namespace PROYECTO_PRUEBA.Controllers
             }
         }
 
-
         [HttpGet("BuscarPorId/{id}")]
         public async Task<IActionResult> BuscarRecetaPorId(int id)
         {
@@ -134,6 +133,8 @@ namespace PROYECTO_PRUEBA.Controllers
                 {
                     return BadRequest(new { isSuccess = false, message = "El ID de la receta es obligatorio y debe ser mayor a cero." });
                 }
+
+                int userId = int.Parse(userIdClaim.Value);
 
                 var receta = await _context.Recetas
                     .Where(r => r.id_receta == id)
@@ -152,6 +153,8 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
+                        isRecetaGuardada = _context.Recetas_Guardadas
+                            .Any(rg => rg.id_receta == id && rg.id_usuario == userId), // Aquí se añade el booleano
                         Ingredientes = _context.Recetas_Ingredientes
                             .Where(ri => ri.id_receta == r.id_receta)
                             .Join(_context.Ingredientes,
@@ -166,6 +169,11 @@ namespace PROYECTO_PRUEBA.Controllers
                     })
                     .FirstOrDefaultAsync();
 
+                if (receta == null)
+                {
+                    return NotFound(new { isSuccess = false, message = "Receta no encontrada." });
+                }
+
                 return Ok(new { isSuccess = true, data = receta });
             }
             catch (Exception ex)
@@ -173,6 +181,8 @@ namespace PROYECTO_PRUEBA.Controllers
                 return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al buscar la receta.", detalle = ex.Message });
             }
         }
+
+
 
 
         [HttpPost("BuscarPorNombre")]
