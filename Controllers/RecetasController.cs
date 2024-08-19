@@ -142,11 +142,6 @@ namespace PROYECTO_PRUEBA.Controllers
                     })
                     .FirstOrDefaultAsync();
 
-                if (receta == null)
-                {
-                    return NotFound(new { isSuccess = false, message = "No se encontró ninguna receta con el ID proporcionado." });
-                }
-
                 return Ok(new { isSuccess = true, data = receta });
             }
             catch (Exception ex)
@@ -202,11 +197,6 @@ namespace PROYECTO_PRUEBA.Controllers
                                   }).ToList()
                     })
                     .ToListAsync();
-
-                if (recetas == null || !recetas.Any())
-                {
-                    return NotFound(new { isSuccess = false, message = "No se encontraron recetas con un título similar." });
-                }
 
                 return Ok(new { isSuccess = true, data = recetas });
             }
