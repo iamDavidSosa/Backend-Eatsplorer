@@ -121,7 +121,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
@@ -182,7 +182,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
@@ -245,7 +245,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
@@ -299,7 +299,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
@@ -357,7 +357,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
@@ -537,7 +537,7 @@ namespace PROYECTO_PRUEBA.Controllers
                 r.instrucciones,
                 r.foto_receta,
                 r.usuario_id,
-                UsuarioNombre = _context.Usuarios
+                usuario_nombre = _context.Usuarios
                     .Where(u => u.id_usuario == r.usuario_id)
                     .Select(u => u.usuario)
                     .FirstOrDefault(),
@@ -593,7 +593,7 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
-                        UsuarioNombre = _context.Usuarios
+                        usuario_nombre = _context.Usuarios
                             .Where(u => u.id_usuario == r.usuario_id)
                             .Select(u => u.usuario)
                             .FirstOrDefault(),
