@@ -6,6 +6,7 @@ using PROYECTO_PRUEBA.Context;
 using PROYECTO_PRUEBA.Custom;
 using PROYECTO_PRUEBA.Models;
 using PROYECTO_PRUEBA.Models.DTOs;
+using System.Security.Claims;
 
 namespace PROYECTO_PRUEBA.Controllers
 {
@@ -81,53 +82,68 @@ namespace PROYECTO_PRUEBA.Controllers
           }*/
 
 
-        [HttpPost("Listar")]
-        public async Task<ActionResult<IEnumerable<RecetaGuardadasDTO>>> Listar([FromBody] UsuarioIdDTO dto)
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
+
             try
             {
-                var recetasGuardadas = await _context.Recetas_Guardadas
-                    .Where(r => r.id_usuario == dto.id_usuario)
+                int idUsuario = int.Parse(userIdClaim.Value);
+
+                var recetasGuardadasIds = await _context.Recetas_Guardadas
+                    .Where(r => r.id_usuario == idUsuario)
                     .Select(r => r.id_receta)
                     .ToListAsync();
 
                 var recetas = await _context.Recetas
-                    .Where(r => recetasGuardadas.Contains(r.id_receta))
-                    .ToListAsync();
-
-                var recetasConIngredientes = await _context.Recetas_Ingredientes
-                    .Where(ri => recetasGuardadas.Contains(ri.id_receta))
-                    .Join(_context.Ingredientes,
-                          ri => ri.id_ingrediente,
-                          i => i.id_ingrediente,
-                          (ri, i) => new { ri.id_receta, i.nombre })
-                    .GroupBy(x => x.id_receta)
-                    .Select(g => new
+                    .Where(r => recetasGuardadasIds.Contains(r.id_receta))
+                    .Select(r => new
                     {
-                        RecetaId = g.Key,
-                        Ingredientes = g.Select(x => x.nombre).ToList()
+                        r.id_receta,
+                        r.titulo,
+                        r.descripcion,
+                        r.instrucciones,
+                        r.foto_receta,
+                        r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
+                        r.fecha_creacion,
+                        r.porciones,
+                        r.likes,
+                        Ingredientes = _context.Recetas_Ingredientes
+                            .Where(ri => ri.id_receta == r.id_receta)
+                            .Join(_context.Ingredientes,
+                                  ri => ri.id_ingrediente,
+                                  i => i.id_ingrediente,
+                                  (ri, i) => new
+                                  {
+                                      i.id_ingrediente,
+                                      i.nombre,
+                                      ri.cantidad
+                                  }).ToList()
                     })
                     .ToListAsync();
 
-                var resultado = recetas.Select(r => new RecetaGuardadasDTO
+                if (recetas == null || !recetas.Any())
                 {
-                    id_receta = r.id_receta,
-                    titulo = r.titulo,
-                    descripcion = r.descripcion,
-                    instrucciones = r.instrucciones,
-                    foto_receta = r.foto_receta,
-                    porciones = r.porciones,
-                    Ingredientes = recetasConIngredientes
-                        .FirstOrDefault(rc => rc.RecetaId == r.id_receta)?.Ingredientes ?? new List<string>()
-                }).ToList();
+                    return NotFound(new { isSuccess = false, message = "No se encontraron recetas guardadas para este usuario." });
+                }
 
-                return Ok(resultado);
+                return Ok(new { isSuccess = true, recetasGuardadas = recetas });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+                return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al listar las recetas guardadas.", detalle = ex.Message });
             }
         }
+
 
 
         /* [HttpGet("ListarPorDias")]
@@ -162,17 +178,25 @@ namespace PROYECTO_PRUEBA.Controllers
          }*/
 
 
-        [HttpPost("ListarPorDias")]
-        public async Task<ActionResult<IEnumerable<RecetaGuardadasDTO>>> ListarPorDias([FromBody] UsuarioIdDTO dto)
+        [HttpGet("ListarPorDias")]
+        public async Task<IActionResult> ListarPorDias()
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
+
             try
             {
+                int idUsuario = int.Parse(userIdClaim.Value);
+
                 // Obtener el número de días desde la base de datos
                 var diasConfig = await _context.Dias.FirstOrDefaultAsync();
 
                 if (diasConfig == null)
                 {
-                    return NotFound("No se encontró la configuración de días.");
+                    return NotFound(new { isSuccess = false, message = "No se encontró la configuración de días." });
                 }
 
                 // Calcular la fecha de hoy y la fecha correspondiente al número de días antes de hoy
@@ -181,54 +205,55 @@ namespace PROYECTO_PRUEBA.Controllers
 
                 // Filtrar las recetas guardadas por el intervalo de tiempo calculado y el ID del usuario
                 var recetasGuardadasIds = await _context.Recetas_Guardadas
-                    .Where(r => r.id_usuario == dto.id_usuario && r.fecha_acceso >= fechaInicio && r.fecha_acceso <= fechaFin)
-                    .Select(rg => rg.id_receta)
+                    .Where(r => r.id_usuario == idUsuario && r.fecha_acceso >= fechaInicio && r.fecha_acceso <= fechaFin)
+                    .Select(r => r.id_receta)
                     .ToListAsync();
 
-                // Si no hay recetas guardadas, retorna una lista vacía
                 if (!recetasGuardadasIds.Any())
                 {
-                    return Ok(new List<RecetaGuardadasDTO>());
+                    return Ok(new { isSuccess = true, recetasGuardadas = new List<object>() });
                 }
 
-                // Obtener las recetas y sus ingredientes
+                // Obtener las recetas junto con los ingredientes y la información del usuario
                 var recetas = await _context.Recetas
                     .Where(r => recetasGuardadasIds.Contains(r.id_receta))
-                    .ToListAsync();
-
-                var recetasIngredientes = await _context.Recetas_Ingredientes
-                    .Where(ri => recetasGuardadasIds.Contains(ri.id_receta))
-                    .Join(_context.Ingredientes,
-                        ri => ri.id_ingrediente,
-                        i => i.id_ingrediente,
-                        (ri, i) => new { ri.id_receta, i.nombre })
-                    .ToListAsync();
-
-                // Agrupar los ingredientes por receta
-                var recetasConIngredientes = recetas
-                    .Select(r => new RecetaGuardadasDTO
+                    .Select(r => new
                     {
-                        id_receta = r.id_receta,
-                        titulo = r.titulo,
-                        descripcion = r.descripcion,
-                        instrucciones = r.instrucciones,
-                        foto_receta = r.foto_receta,
-                        porciones = r.porciones,
-                        Ingredientes = recetasIngredientes
+                        r.id_receta,
+                        r.titulo,
+                        r.descripcion,
+                        r.instrucciones,
+                        r.foto_receta,
+                        r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
+                        r.fecha_creacion,
+                        r.porciones,
+                        r.likes,
+                        Ingredientes = _context.Recetas_Ingredientes
                             .Where(ri => ri.id_receta == r.id_receta)
-                            .Select(ri => ri.nombre)
-                            .Distinct()
-                            .ToList()
+                            .Join(_context.Ingredientes,
+                                  ri => ri.id_ingrediente,
+                                  i => i.id_ingrediente,
+                                  (ri, i) => new
+                                  {
+                                      i.id_ingrediente,
+                                      i.nombre,
+                                      ri.cantidad
+                                  }).ToList()
                     })
-                    .ToList();
+                    .ToListAsync();
 
-                return Ok(recetasConIngredientes);
+                return Ok(new { isSuccess = true, recetasGuardadas = recetas });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+                return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al listar las recetas guardadas por días.", detalle = ex.Message });
             }
         }
+
 
 
         [HttpPut("ActualizarFechaAcceso")]
