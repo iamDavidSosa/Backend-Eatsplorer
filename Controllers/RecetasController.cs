@@ -95,6 +95,67 @@ namespace PROYECTO_PRUEBA.Controllers
         //    }
         //}
 
+        [HttpGet("BuscarPorId/{id}")]
+        public async Task<IActionResult> BuscarRecetaPorId(int id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { isSuccess = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                if (id <= 0)
+                {
+                    return BadRequest(new { isSuccess = false, message = "El ID de la receta es obligatorio y debe ser mayor a cero." });
+                }
+
+                var receta = await _context.Recetas
+                    .Where(r => r.id_receta == id)
+                    .Select(r => new
+                    {
+                        r.id_receta,
+                        r.titulo,
+                        r.descripcion,
+                        r.instrucciones,
+                        r.foto_receta,
+                        r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
+                        r.fecha_creacion,
+                        r.porciones,
+                        r.likes,
+                        Ingredientes = _context.Recetas_Ingredientes
+                            .Where(ri => ri.id_receta == r.id_receta)
+                            .Join(_context.Ingredientes,
+                                  ri => ri.id_ingrediente,
+                                  i => i.id_ingrediente,
+                                  (ri, i) => new
+                                  {
+                                      i.id_ingrediente,
+                                      i.nombre,
+                                      ri.cantidad
+                                  }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (receta == null)
+                {
+                    return NotFound(new { isSuccess = false, message = "No se encontró ninguna receta con el ID proporcionado." });
+                }
+
+                return Ok(new { isSuccess = true, data = receta });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { isSuccess = false, message = "Ocurrió un error al buscar la receta.", detalle = ex.Message });
+            }
+        }
+
+
 
         [HttpPost("BuscarPorNombre")]
         public async Task<IActionResult> BuscarRecetasPorNombre([FromBody] RecetasDTO request)
@@ -121,6 +182,10 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
@@ -180,6 +245,10 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
@@ -230,6 +299,10 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
@@ -284,6 +357,10 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
@@ -414,6 +491,7 @@ namespace PROYECTO_PRUEBA.Controllers
 
             int idUsuario = int.Parse(userIdClaim.Value);
 
+            // Obtención de los ingredientes según el tipo (gusta, no consume, alérgico)
             var ingredientesGusta = await _context.Detalles_Usuario
                 .Where(du => du.id_usuario == idUsuario && du.tipo == 1)
                 .Select(du => du.id_ingrediente)
@@ -429,14 +507,15 @@ namespace PROYECTO_PRUEBA.Controllers
                 .Select(du => du.id_ingrediente)
                 .ToListAsync();
 
-            var recetas = await _context.Recetas.ToListAsync();
+            // Obtención de las recetas filtradas según las restricciones del usuario
+            var recetasFiltradas = await _context.Recetas
+                .Where(r =>
+                    !_context.Recetas_Ingredientes
+                        .Where(ri => ri.id_receta == r.id_receta)
+                        .Any(ri => ingredientesAlergico.Contains(ri.id_ingrediente)))
+                .ToListAsync();
 
-            var recetasFiltradas = recetas.Where(r =>
-                !_context.Recetas_Ingredientes
-                .Where(ri => ri.id_receta == r.id_receta)
-                .Any(ri => ingredientesAlergico.Contains(ri.id_ingrediente))
-            ).ToList();
-
+            // Filtrado adicional basado en las preferencias del usuario
             var recetasSugeridas = recetasFiltradas.Where(r =>
             {
                 var ingredientesReceta = _context.Recetas_Ingredientes
@@ -449,10 +528,39 @@ namespace PROYECTO_PRUEBA.Controllers
                 var noSoloNoConsume = !contieneNoConsume || ingredientesReceta.Count(i => ingredientesNoConsume.Contains(i)) < ingredientesReceta.Count;
 
                 return contieneGustos && noSoloNoConsume;
-            }).ToList();
+            })
+            .Select(r => new
+            {
+                r.id_receta,
+                r.titulo,
+                r.descripcion,
+                r.instrucciones,
+                r.foto_receta,
+                r.usuario_id,
+                UsuarioNombre = _context.Usuarios
+                    .Where(u => u.id_usuario == r.usuario_id)
+                    .Select(u => u.usuario)
+                    .FirstOrDefault(),
+                r.fecha_creacion,
+                r.porciones,
+                r.likes,
+                Ingredientes = _context.Recetas_Ingredientes
+                    .Where(ri => ri.id_receta == r.id_receta)
+                    .Join(_context.Ingredientes,
+                          ri => ri.id_ingrediente,
+                          i => i.id_ingrediente,
+                          (ri, i) => new
+                          {
+                              i.id_ingrediente,
+                              i.nombre,
+                              ri.cantidad
+                          }).ToList()
+            })
+            .ToList();
 
             return Ok(new { isSuccess = true, recetasSugeridas });
         }
+
 
         [HttpGet("recetasDespensa")]
         public async Task<IActionResult> ObtenerRecetasConDespensa()
@@ -485,6 +593,10 @@ namespace PROYECTO_PRUEBA.Controllers
                         r.instrucciones,
                         r.foto_receta,
                         r.usuario_id,
+                        UsuarioNombre = _context.Usuarios
+                            .Where(u => u.id_usuario == r.usuario_id)
+                            .Select(u => u.usuario)
+                            .FirstOrDefault(),
                         r.fecha_creacion,
                         r.porciones,
                         r.likes,
